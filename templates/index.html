@@ -13,7 +13,7 @@
     <header class="site-header">
         <div class="container">
             <a href="#profile" class="brand">Yasmin</a>
-            <nav>
+            <nav aria-label="Primary">
                 <a href="#profile">Profile</a>
                 <a href="#education">Education</a>
                 <a href="#projects">Projects</a>
@@ -32,7 +32,7 @@
                     <h1>Yasmin</h1>
                 </div>
                 <div class="hero-photo">
-                <div class="photo-block"></div>
+                <div class="photo-block" aria-hidden="true"></div>
 
                 <img
                     class="avatar avatar-1"
@@ -43,7 +43,7 @@
                 <img
                     class="avatar avatar-2"
                     src="/static/img/FotoMizi2.jpg"
-                    alt="Profile photo"
+                    alt="Alternate profile photo"
                 >
                 </div>
                 <div class="hero-details">
@@ -194,13 +194,11 @@
             <div class="container">
                 <h2 class="section-badge">Experiences</h2>
                 <div class="experience-list">
-                    
-                    <!-- Contoh Kartu dengan 2 Role dalam 1 Organisasi -->
+
                     <article class="card experience-card">
                         <img src="/static/img/OH26.jpg" alt="Logo Open House Fasilkom UI 2026" class="exp-icon">
                         <div class="exp-details">
                             <h3 class="org-title">Open House Fasilkom UI 2026</h3>
-                            
                             <div class="role-list">
                                 <div class="role-item">
                                     <h4>Manager of Creative Development</h4>
@@ -209,7 +207,7 @@
                             </div>
                         </div>
                     </article>
-                    
+
                     <article class="card experience-card">
                         <img src="/static/img/COMPFEST.jpg" alt="Logo COMPFEST 18" class="exp-icon">
                         <div class="exp-details">
@@ -228,7 +226,6 @@
                         <div class="exp-details">
                             <h3 class="org-title">Dasar-Dasar Pemrograman 0</h3>
                             <div class="role-list">
-                                <div class="role-list">
                                 <div class="role-item">
                                     <h4>Staff of Academics</h4>
                                     <p class="role-period">Jun 2026 - Aug 2026</p>
@@ -237,7 +234,6 @@
                                     <h4>Mentor</h4>
                                     <p class="role-period">Jul 2026 - Aug 2026</p>
                                 </div>
-                            </div>
                             </div>
                         </div>
                     </article>
@@ -302,7 +298,7 @@
         <section class="portfolio-section" id="art-portfolio">
             <div class="container">
                 <h2 class="section-badge">Art Portfolio</h2>
-                
+
                 <!-- Hidden Radio Buttons -->
                 <input type="radio" name="art-tab" id="tab-characters" checked class="art-radio">
                 <input type="radio" name="art-tab" id="tab-backgrounds" class="art-radio">
@@ -311,9 +307,9 @@
                 <input type="radio" name="art-tab" id="tab-spritesheets" class="art-radio">
 
                 <div class="art-portfolio-layout">
-                    <!-- Sidebar Kiri: Kotak Preview & Tombol Menu -->
+                    <!-- Sidebar Kiri: Tombol Menu -->
                     <aside class="art-sidebar">
-                        <nav class="art-nav">
+                        <nav class="art-nav" aria-label="Art categories">
                             <label for="tab-characters" class="art-nav-btn btn-characters">Characters</label>
                             <label for="tab-backgrounds" class="art-nav-btn btn-backgrounds">Backgrounds</label>
                             <label for="tab-icons" class="art-nav-btn btn-icons">Vector Icons</label>
@@ -328,7 +324,6 @@
                         <div class="art-marquee-wrapper marquee-characters">
                             <div class="art-marquee">
                                 <div class="art-marquee-track">
-                                    <!-- Kelompok 1 (Asli) -->
                                     <div class="art-slide"><img src="/static/img/character_1.png" alt="Character 1"></div>
                                     <div class="art-slide"><img src="/static/img/character_2.png" alt="Character 2"></div>
                                     <div class="art-slide"><img src="/static/img/character_3.png" alt="Character 3"></div>
@@ -336,7 +331,6 @@
                                     <div class="art-slide"><img src="/static/img/character_5.png" alt="Character 5"></div>
                                     <div class="art-slide"><img src="/static/img/character_6.png" alt="Character 6"></div>
                                     <div class="art-slide"><img src="/static/img/character_7.png" alt="Character 7"></div>
-                                    <!-- Kelompok 2 (Duplikat Persis) -->
                                     <div class="art-slide"><img src="/static/img/character_1.png" alt="Character 1"></div>
                                     <div class="art-slide"><img src="/static/img/character_2.png" alt="Character 2"></div>
                                     <div class="art-slide"><img src="/static/img/character_3.png" alt="Character 3"></div>
@@ -352,13 +346,11 @@
                         <div class="art-marquee-wrapper marquee-backgrounds">
                             <div class="art-marquee">
                                 <div class="art-marquee-track">
-                                    <!-- Kelompok 1 (Asli) -->
                                     <div class="art-slide"><img src="/static/img/bg1.png" alt="Background 1"></div>
                                     <div class="art-slide"><img src="/static/img/bg2.png" alt="Background 2"></div>
                                     <div class="art-slide"><img src="/static/img/bg3.png" alt="Background 3"></div>
                                     <div class="art-slide"><img src="/static/img/bg4.png" alt="Background 4"></div>
                                     <div class="art-slide"><img src="/static/img/bg5.png" alt="Background 5"></div>
-                                    <!-- Kelompok 2 (Duplikat) -->
                                     <div class="art-slide"><img src="/static/img/bg1.png" alt="Background 1"></div>
                                     <div class="art-slide"><img src="/static/img/bg2.png" alt="Background 2"></div>
                                     <div class="art-slide"><img src="/static/img/bg3.png" alt="Background 3"></div>
@@ -372,7 +364,6 @@
                         <div class="art-marquee-wrapper marquee-icons">
                             <div class="art-marquee">
                                 <div class="art-marquee-track">
-                                    <!-- Kelompok 1 (Asli) -->
                                     <div class="art-slide"><img src="/static/img/icon1.png" alt="Icon 1"></div>
                                     <div class="art-slide"><img src="/static/img/icon2.png" alt="Icon 2"></div>
                                     <div class="art-slide"><img src="/static/img/icon3.png" alt="Icon 3"></div>
@@ -383,7 +374,6 @@
                                     <div class="art-slide"><img src="/static/img/icon8.png" alt="Icon 8"></div>
                                     <div class="art-slide"><img src="/static/img/icon9.png" alt="Icon 9"></div>
                                     <div class="art-slide"><img src="/static/img/icon10.png" alt="Icon 10"></div>
-                                    <!-- Kelompok 2 (Duplikat) -->
                                     <div class="art-slide"><img src="/static/img/icon1.png" alt="Icon 1"></div>
                                     <div class="art-slide"><img src="/static/img/icon2.png" alt="Icon 2"></div>
                                     <div class="art-slide"><img src="/static/img/icon3.png" alt="Icon 3"></div>
@@ -402,10 +392,8 @@
                         <div class="art-marquee-wrapper marquee-tilemaps">
                             <div class="art-marquee">
                                 <div class="art-marquee-track">
-                                    <!-- Kelompok 1 (Asli) -->
                                     <div class="art-slide"><img src="/static/img/tile1.png" alt="Tilemap 1"></div>
                                     <div class="art-slide"><img src="/static/img/tile2.png" alt="Tilemap 2"></div>
-                                    <!-- Kelompok 2 (Duplikat) -->
                                     <div class="art-slide"><img src="/static/img/tile1.png" alt="Tilemap 1"></div>
                                     <div class="art-slide"><img src="/static/img/tile2.png" alt="Tilemap 2"></div>
                                 </div>
@@ -416,10 +404,8 @@
                         <div class="art-marquee-wrapper marquee-spritesheets">
                             <div class="art-marquee">
                                 <div class="art-marquee-track">
-                                    <!-- Kelompok 1 (Asli) -->
                                     <div class="art-slide"><img src="/static/img/sprite1.png" alt="Spritesheet 1"></div>
                                     <div class="art-slide"><img src="/static/img/sprite2.png" alt="Spritesheet 2"></div>
-                                    <!-- Kelompok 2 (Duplikat) -->
                                     <div class="art-slide"><img src="/static/img/sprite1.png" alt="Spritesheet 1"></div>
                                     <div class="art-slide"><img src="/static/img/sprite2.png" alt="Spritesheet 2"></div>
                                 </div>
@@ -429,6 +415,8 @@
                 </div>
             </div>
         </section>
+    </main>
+
     <footer class="site-footer">
         <div class="container">
             <p>&copy; 2026 Yasmin. Fakultas Ilmu Komputer, Universitas Indonesia.</p>

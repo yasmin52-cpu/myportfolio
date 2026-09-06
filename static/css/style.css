@@ -9,7 +9,7 @@
 :root {
     --ink: #1c1917;
     --paper: #faf6f0;
-    --accent: #E365C1;;
+    --accent: #E365C1;
     --accent-dark: #811B66;
     --background: linear-gradient(#E2B6CF, #E365C1);
     --line: #e3d9c9;
@@ -23,7 +23,7 @@ html {
 
 body {
     font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--accent);
+    color: var(--ink);
     background-color: #F6EFEE;
     line-height: 1.6;
 }
@@ -60,13 +60,27 @@ h1, .brand {
 
 .site-header nav {
     display: flex;
-    gap: 2rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem 2rem;
 }
 
 .site-header nav a {
     color: #811B66;
     text-decoration: none;
     font-size: 0.95rem;
+}
+
+@media (max-width: 600px) {
+    .site-header .container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .site-header nav {
+        justify-content: center;
+        gap: 0.5rem 1rem;
+    }
 }
 
 /* Hero Section */
@@ -95,7 +109,7 @@ h1, .brand {
     font-size: 0.85rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #811B66;;
+    color: #811B66;
     font-weight: 700;
     margin-bottom: 0.75rem;
 }
@@ -103,6 +117,7 @@ h1, .brand {
 .hero-identity h1 {
     font-size: clamp(3rem, 7vw, 5rem);
     line-height: 0.95;
+    color: var(--accent-dark);
 }
 
 .bio {
@@ -145,7 +160,7 @@ h1, .brand {
     background-color: #811B66;
     border-radius: var(--radius);
     padding: 0.5rem 1.1rem;
-    transition: background-color 0.2s ease, transform 0.2s ease;;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .social-link:hover {
@@ -161,80 +176,59 @@ h1, .brand {
     aspect-ratio: 1 / 1;
 }
 
-
-/* Pink block di belakang */
+/* Pink block behind the photos */
 .photo-block {
     position: absolute;
     top: 1.25rem;
     left: 1.25rem;
-
     width: 100%;
     height: 100%;
-
     background-color: var(--accent);
     border-radius: var(--radius);
-
     z-index: 0;
-
-    transition:
-        transform 0.6s ease,
-        opacity 0.6s ease;
+    transition: transform 0.6s ease, opacity 0.6s ease;
 }
 
-
-/* Base untuk kedua foto */
+/* Base styling shared by both photos */
 .avatar {
     position: absolute;
     top: 0;
     left: 0;
-
     width: 100%;
     height: 100%;
-
     object-fit: cover;
     border-radius: var(--radius);
-
-    transition:
-        transform 0.6s ease-in-out,
-        opacity 0.6s ease-in-out;
+    transition: transform 0.6s ease-in-out, opacity 0.6s ease-in-out;
 }
 
-
-/* FOTO 1: default di depan */
 .avatar-1 {
     z-index: 2;
     opacity: 1;
     transform: translate(0, 0);
 }
 
-
-/* FOTO 2: awalnya di belakang dan tidak terlihat */
 .avatar-2 {
     z-index: 3;
     opacity: 0;
     transform: translate(-15px, -15px);
 }
 
-/* Foto 1 pindah ke belakang */
 .hero-photo:hover .avatar-1 {
     opacity: 0;
     transform: translate(25px, 25px);
 }
 
-
-/* Foto 2 muncul di depan */
 .hero-photo:hover .avatar-2 {
     opacity: 1;
     transform: translate(0, 0);
 }
 
-/* New Sections Layout */
+/* Section Layout */
 .portfolio-section {
     padding: 4rem 0;
     text-align: center;
 }
 
-/* Badge Title */
 .section-badge {
     display: inline-flex;
     padding: 0.6rem 2.5rem;
@@ -265,11 +259,6 @@ h1, .brand {
     box-shadow: 0 8px 15px rgba(227, 101, 193, 0.5);
 }
 
-.placeholder-img {
-    background-color: #d1d5db;
-    border-radius: var(--radius);
-}
-
 /* Projects Grid */
 .project-grid {
     display: grid;
@@ -277,16 +266,17 @@ h1, .brand {
     gap: 2rem;
 }
 
-/* Styling gambar Project Card */
+.project-card {
+    display: flex;
+    flex-direction: column;
+}
+
 .project-card .card-image {
     width: 100%;
     aspect-ratio: 16 / 9;
     object-fit: cover;
     border-radius: var(--radius);
-    border: none;
     margin-bottom: 1rem;
-    display: flex;
-    flex-direction: column;
 }
 
 .project-card h3 {
@@ -312,6 +302,7 @@ h1, .brand {
     font-size: 0.85rem;
     transition: background-color 0.2s ease, transform 0.2s ease;
     margin-top: auto;
+    align-self: flex-start;
 }
 
 .btn-primary:hover {
@@ -319,7 +310,7 @@ h1, .brand {
     transform: translateY(-2px);
 }
 
-/* Experiences Flexbox */
+/* Experiences */
 .experience-list {
     display: flex;
     flex-direction: column;
@@ -342,12 +333,7 @@ h1, .brand {
     object-fit: cover;
     border-radius: 8px;
 }
-.exp-details h3 {
-    color: var(--accent-dark);
-    font-size: 1.1rem;
-}
 
-/* Styling untuk Multi-Role Experience Card */
 .exp-details {
     width: 100%;
 }
@@ -385,7 +371,6 @@ h1, .brand {
     font-weight: 500;
 }
 
-/* Mobile Responsiveness */
 @media (max-width: 600px) {
     .experience-card {
         flex-direction: column;
@@ -393,52 +378,22 @@ h1, .brand {
     }
 }
 
-/* Tech Stack Card Styling */
-.tech-card {
-    background-color: var(--ink);
-    color: var(--paper);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    text-align: left;
-    border: 2px solid var(--line);
-}
-
-.tech-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.tech-header h3 {
-    font-size: 1.25rem;
-    color: var(--paper);
-}
-
-.tech-icon-symbol {
-    font-size: 1.2rem;
-}
-
-/* Sembunyikan radio button bawaan */
+/* Art Portfolio */
 .art-radio {
     display: none;
 }
 
-/* Layout Art Portfolio */
 .art-portfolio-layout {
     display: grid;
     grid-template-columns: 280px 1fr;
     gap: 2rem;
     background-color: white;
-    border: none;
     border-radius: 20px;
     padding: 2rem;
     box-shadow: 0 8px 20px rgba(227, 101, 193, 0.2);
     text-align: left;
 }
 
-/* Sidebar Kiri */
 .art-sidebar {
     background-color: var(--accent-dark);
     border-radius: 16px;
@@ -448,14 +403,6 @@ h1, .brand {
     gap: 1.5rem;
 }
 
-.sidebar-preview-box {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background-color: #d1d5db;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
 .art-nav {
     display: flex;
     flex-direction: column;
@@ -463,7 +410,7 @@ h1, .brand {
 }
 
 .art-nav-btn {
-width: 100%;
+    width: 100%;
     background-color: #ffffff;
     color: var(--accent-dark);
     padding: 0.75rem 1rem;
@@ -474,19 +421,17 @@ width: 100%;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     transition: all 0.2s ease;
     text-align: center;
-    display: block;
     box-sizing: border-box;
     border: 2px solid transparent;
 }
 
-/* Efek saat tombol di-hover */
 .art-nav-btn:hover {
     background-color: var(--accent-dark);
     color: var(--paper);
     box-shadow: inset 0 0 0 2px var(--accent), 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* Styling Tombol Aktif (Saat Dipilih / Diklik) */
+/* Active tab button */
 #tab-characters:checked ~ .art-portfolio-layout .btn-characters,
 #tab-backgrounds:checked ~ .art-portfolio-layout .btn-backgrounds,
 #tab-icons:checked ~ .art-portfolio-layout .btn-icons,
@@ -497,7 +442,6 @@ width: 100%;
     box-shadow: inset 0 0 0 2px var(--accent), 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* Panel Kanan Galeri */
 .art-gallery-container {
     background-color: var(--paper);
     border-radius: 16px;
@@ -526,7 +470,6 @@ width: 100%;
     animation: scrollArtMarquee 25s linear infinite;
 }
 
-/* Berhenti bergerak saat kursor diarahkan ke marquee */
 .art-marquee:hover .art-marquee-track {
     animation-play-state: paused;
 }
@@ -536,15 +479,13 @@ width: 100%;
         transform: translateX(0);
     }
     100% {
-        transform: translateX(-50%);
+        transform: translateX(calc(-50% - 0.75rem));
     }
 }
 
 .art-slide {
     max-height: 280px;
     min-width: 200px;
-    background-color: transparent;
-    border: none;
     border-radius: var(--radius);
     overflow: hidden;
     flex-shrink: 0;
@@ -558,41 +499,15 @@ width: 100%;
     border-radius: var(--radius);
 }
 
-/* Logika Pure CSS untuk Menampilkan Konten Sesuai Tombol yang Ditekan */
-#tab-characters:checked ~ .art-portfolio-layout .img-characters,
+/* Show the gallery/track that matches the checked tab */
 #tab-characters:checked ~ .art-portfolio-layout .marquee-characters,
-#tab-backgrounds:checked ~ .art-portfolio-layout .img-backgrounds,
 #tab-backgrounds:checked ~ .art-portfolio-layout .marquee-backgrounds,
-#tab-icons:checked ~ .art-portfolio-layout .img-icons,
 #tab-icons:checked ~ .art-portfolio-layout .marquee-icons,
-#tab-tilemaps:checked ~ .art-portfolio-layout .img-tilemaps,
 #tab-tilemaps:checked ~ .art-portfolio-layout .marquee-tilemaps,
-#tab-spritesheets:checked ~ .art-portfolio-layout .img-spritesheets,
 #tab-spritesheets:checked ~ .art-portfolio-layout .marquee-spritesheets {
     display: block;
 }
 
-/* Styling Tombol Aktif */
-#tab-characters:checked ~ .art-portfolio-layout .btn-characters,
-#tab-backgrounds:checked ~ .art-portfolio-layout .btn-backgrounds,
-#tab-icons:checked ~ .art-portfolio-layout .btn-icons,
-#tab-tilemaps:checked ~ .art-portfolio-layout .btn-tilemaps,
-#tab-spritesheets:checked ~ .art-portfolio-layout .btn-spritesheets {
-    background-color: var(--accent-dark);
-    color: white;
-}
-
-/* Animasi Marquee */
-@keyframes scrollArtMarquee {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(calc(-50% - 0.75rem));
-    }
-}
-
-/* Responsif Mobile */
 @media (max-width: 768px) {
     .art-portfolio-layout {
         grid-template-columns: 1fr;
@@ -605,6 +520,7 @@ width: 100%;
     color: #811B66;
     font-size: 0.85rem;
     border-top: 1px solid var(--line);
+    text-align: center;
 }
 
 @media (max-width: 600px) {
@@ -618,6 +534,7 @@ width: 100%;
 
     .hero-photo {
         max-width: 220px;
+        margin: 0 auto;
     }
 
     .social-links {
