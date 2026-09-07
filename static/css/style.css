@@ -11,7 +11,7 @@
     --paper: #faf6f0;
     --accent: #E365C1;
     --accent-dark: #811B66;
-    --background: linear-gradient(#E2B6CF, #E365C1);
+    --background: linear-gradient(#E2B6CF, var(--accent));
     --line: #e3d9c9;
     --text-muted: #6b6459;
     --radius: 16px;
@@ -40,7 +40,7 @@ h1, .brand {
 
 /* Header */
 .site-header {
-    background-color: #E365C1;
+    background-color: var(--accent);
     border-bottom: 1px solid #E396DF;
 }
 
@@ -54,7 +54,7 @@ h1, .brand {
 .brand {
     font-size: 1.3rem;
     font-weight: 700;
-    color: #811B66;
+    color: var(--accent-dark);
     text-decoration: none;
 }
 
@@ -66,7 +66,7 @@ h1, .brand {
 }
 
 .site-header nav a {
-    color: #811B66;
+    color: var(--accent-dark);
     text-decoration: none;
     font-size: 0.95rem;
 }
@@ -109,7 +109,7 @@ h1, .brand {
     font-size: 0.85rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #811B66;
+    color: var(--accent-dark);
     font-weight: 700;
     margin-bottom: 0.75rem;
 }
@@ -121,13 +121,13 @@ h1, .brand {
 }
 
 .bio {
-    color: #811B66;
+    color: var(--accent-dark);
     max-width: 480px;
     margin-bottom: 1.5rem;
 }
 
 .meta-list {
-    color: #811B66;
+    color: var(--accent-dark);
     display: flex;
     gap: 2rem;
     margin-bottom: 1.5rem;
@@ -137,7 +137,7 @@ h1, .brand {
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: #811B66;
+    color: var(--accent-dark);
     margin-bottom: 0.15rem;
 }
 
@@ -157,7 +157,7 @@ h1, .brand {
     font-weight: 600;
     text-decoration: none;
     color: var(--paper);
-    background-color: #811B66;
+    background-color: var(--accent-dark);
     border-radius: var(--radius);
     padding: 0.5rem 1.1rem;
     transition: background-color 0.2s ease, transform 0.2s ease;
@@ -517,7 +517,7 @@ h1, .brand {
 /* Footer */
 .site-footer {
     padding: 1.5rem;
-    color: #811B66;
+    color: var(--accent-dark);
     font-size: 0.85rem;
     border-top: 1px solid var(--line);
     text-align: center;
