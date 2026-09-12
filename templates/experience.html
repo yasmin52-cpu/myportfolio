@@ -1,43 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yasmin - Portfolio</title>
+    <title>Experience & Education - Yasmin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/styleExp.css">
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
-
 <body>
     <header class="site-header">
         <div class="container">
-            <a href="#profile" class="brand">Yasmin</a>
+            <a href="{% url 'main:show_main' %}" class="brand">Yasmin</a>
             <nav aria-label="Primary">
                 <a href="{% url 'main:show_main' %}">Profile</a>
                 <a href="{% url 'main:show_experience' %}">Experience</a>
+                <a href="{% url 'main:show_projects' %}">Projects</a>
+                <a href="{% url 'main:show_art' %}">Art Portfolio</a>
             </nav>
         </div>
     </header>
 
     <main>
-        <section class="experience-section" id="experience">
+        <!-- Education Section -->
+        <section class="portfolio-section" id="education">
             <div class="container">
-                <p class="section-kicker">Perjalanan saya sejauh ini</p>
-                <h1>Experience</h1>
-                <div class="experience-grid">
-                    {% for experience in experience_list %}
-                    <article class="experience-card">
-                        <span class="experience-category">{{ experience.get_category_display }}</span>
-                        <h2>{{ experience.title }}</h2>
-                        <p class="experience-description">{{ experience.description }}</p>
-                        {% if experience.is_ongoing %}
-                        <p class="experience-status">Sedang berlangsung</p>
-                        {% else %}
-                        <p class="experience-status">Selesai</p>
+                <h2 class="section-badge">Education</h2>
+                <div class="experience-list">
+                    {% for edu in education_list %}
+                    <article class="card experience-card">
+                        {% if edu.logo_url %}
+                        <img src="{{ edu.logo_url }}" alt="{{ edu.institution }} Logo" class="exp-icon">
                         {% endif %}
+                        <div class="exp-details">
+                            <h3 class="org-title">{{ edu.institution }}</h3>
+                            <div class="role-list">
+                                <div class="role-item">
+                                    <h4>{{ edu.faculty }}</h4>
+                                    <p class="role-period">{{ edu.start_period }} - {{ edu.end_period }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <p class="empty-state">Belum ada data pendidikan yang ditambahkan.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiences Section -->
+        <section class="portfolio-section" id="experiences">
+            <div class="container">
+                <h2 class="section-badge">Experiences</h2>
+                <div class="experience-list">
+                    {% for exp in experience_list %}
+                    <article class="card experience-card">
+                        {% if exp.image_url %}
+                        <img src="{{ exp.image_url }}" alt="{{ exp.organization }} Logo" class="exp-icon">
+                        {% endif %}
+                        <div class="exp-details">
+                            <h3 class="org-title">{{ exp.organization }}</h3>
+                            <div class="role-list">
+                                <div class="role-item">
+                                    <h4>{{ exp.title }}</h4>
+                                    <p class="experience-description">{{ exp.description }}</p>
+                                    {% if exp.is_ongoing %}
+                                    <p class="role-period">Sedang Berlangsung</p>
+                                    {% else %}
+                                    <p class="role-period">Selesai</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
                     </article>
                     {% empty %}
                     <p class="empty-state">Belum ada pengalaman yang ditambahkan.</p>
@@ -53,5 +89,4 @@
         </div>
     </footer>
 </body>
-
 </html>

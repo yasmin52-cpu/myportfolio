@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Portfolio - Yasmin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a href="{% url 'main:show_main' %}" class="brand">Yasmin</a>
+            <nav aria-label="Primary">
+                <a href="{% url 'main:show_main' %}">Profile</a>
+                <a href="{% url 'main:show_experience' %}">Experience</a>
+                <a href="{% url 'main:show_projects' %}">Projects</a>
+                <a href="{% url 'main:show_art' %}">Art Portfolio</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="portfolio-section" id="art-portfolio">
+            <div class="container">
+                <h2 class="section-badge">Art Portfolio</h2>
+
+                <!-- Hidden Radio Buttons -->
+                <input type="radio" name="art-tab" id="tab-characters" checked class="art-radio">
+                <input type="radio" name="art-tab" id="tab-backgrounds" class="art-radio">
+                <input type="radio" name="art-tab" id="tab-icons" class="art-radio">
+                <input type="radio" name="art-tab" id="tab-tilemaps" class="art-radio">
+                <input type="radio" name="art-tab" id="tab-spritesheets" class="art-radio">
+
+                <div class="art-portfolio-layout">
+                    <aside class="art-sidebar">
+                        <nav class="art-nav" aria-label="Art categories">
+                            <label for="tab-characters" class="art-nav-btn btn-characters">Characters</label>
+                            <label for="tab-backgrounds" class="art-nav-btn btn-backgrounds">Backgrounds</label>
+                            <label for="tab-icons" class="art-nav-btn btn-icons">Vector Icons</label>
+                            <label for="tab-tilemaps" class="art-nav-btn btn-tilemaps">Tilemaps</label>
+                            <label for="tab-spritesheets" class="art-nav-btn btn-spritesheets">Spritesheets</label>
+                        </nav>
+                    </aside>
+
+                    <div class="art-gallery-container">
+                        <!-- Characters -->
+                        <div class="art-marquee-wrapper marquee-characters">
+                            <div class="art-marquee">
+                                <div class="art-marquee-track">
+                                    {% for art in characters %}
+                                    <div class="art-slide"><img src="{{ art.image_url }}" alt="{{ art.title }}"></div>
+                                    {% empty %}
+                                    <p>Belum ada gambar karakter.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Backgrounds -->
+                        <div class="art-marquee-wrapper marquee-backgrounds">
+                            <div class="art-marquee">
+                                <div class="art-marquee-track">
+                                    {% for art in backgrounds %}
+                                    <div class="art-slide"><img src="{{ art.image_url }}" alt="{{ art.title }}"></div>
+                                    {% empty %}
+                                    <p>Belum ada gambar background.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vector Icons -->
+                        <div class="art-marquee-wrapper marquee-icons">
+                            <div class="art-marquee">
+                                <div class="art-marquee-track">
+                                    {% for art in icons %}
+                                    <div class="art-slide"><img src="{{ art.image_url }}" alt="{{ art.title }}"></div>
+                                    {% empty %}
+                                    <p>Belum ada gambar icon.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tilemaps -->
+                        <div class="art-marquee-wrapper marquee-tilemaps">
+                            <div class="art-marquee">
+                                <div class="art-marquee-track">
+                                    {% for art in tilemaps %}
+                                    <div class="art-slide"><img src="{{ art.image_url }}" alt="{{ art.title }}"></div>
+                                    {% empty %}
+                                    <p>Belum ada gambar tilemap.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Spritesheets -->
+                        <div class="art-marquee-wrapper marquee-spritesheets">
+                            <div class="art-marquee">
+                                <div class="art-marquee-track">
+                                    {% for art in spritesheets %}
+                                    <div class="art-slide"><img src="{{ art.image_url }}" alt="{{ art.title }}"></div>
+                                    {% empty %}
+                                    <p>Belum ada gambar spritesheet.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>&copy; 2026 Yasmin. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
+        </div>
+    </footer>
+</body>
+</html>
