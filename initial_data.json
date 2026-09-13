@@ -1,0 +1,144 @@
+[
+  {
+    "model": "main.education",
+    "pk": 1,
+    "fields": {
+      "institution": "Universitas Indonesia",
+      "faculty": "Faculty of Computer Science",
+      "start_period": "Feb 2026",
+      "end_period": "Present",
+      "logo_url": "/static/img/Fasilkom.png"
+    }
+  },
+  {
+    "model": "main.project",
+    "fields": {
+      "title": "Save the Patient!",
+      "description": "A survival game about a doctor enduring a nonstop three-day shift while trying to save patients and stay awake.",
+      "image_url": "/static/img/Save The Patient!.png",
+      "play_url": "https://depelemon.itch.io/save-the-patient"
+    }
+  },
+  {
+    "model": "main.project",
+    "fields": {
+      "title": "Road to the Cinema",
+      "description": "Race to the cinema while avoiding spoilers and obstacles that threaten to ruin the movie before you arrive.",
+      "image_url": "/static/img/Road to Cinema.png",
+      "play_url": "https://rajendraakbar.itch.io/road-to-cinema"
+    }
+  },
+  {
+    "model": "main.project",
+    "fields": {
+      "title": "Survi-vim",
+      "description": "Dodge incoming obstacles, survive as long as possible, and collect points in this fast-paced arcade game.",
+      "image_url": "/static/img/Survi-vim.png",
+      "play_url": "https://marlioboro.itch.io/survi-vim"
+    }
+  },
+  {
+    "model": "main.project",
+    "fields": {
+      "title": "Wait, New Rule!",
+      "description": "A 2.5D platformer where you dodge hazards—including a floor that is literally lava as unexpected new card rules constantly change the game.",
+      "image_url": "/static/img/Wait, New Rule!.png",
+      "play_url": "https://marlioboro.itch.io/wait-new-rules"
+    }
+  },
+  {
+    "model": "main.project",
+    "fields": {
+      "title": "KALANANTI",
+      "description": "A narrative mystery game following two college students investigating their classmate's disappearance while exploring mental health and gender equality.",
+      "image_url": "/static/img/KALANANTI.png",
+      "play_url": "https://drive.google.com/file/d/1OK_3xH_K_dboh0rw14Nva7aNlUxKsUlb/view?usp=drive_link"
+    }
+  },
+  {
+    "model": "main.project",
+    "fields": {
+      "title": "Brine & Blades",
+      "description": "A pixel-art bullet hell shooter where a pirate must navigate an ancient sea temple, battle eldritch sea monsters, and fight their way back to the surface.",
+      "image_url": "/static/img/Brine and Blade.png",
+      "play_url": "https://marlioboro.itch.io/brine-and-blade"
+    }
+  },
+  {
+    "model": "main.experience",
+    "fields": {
+      "title": "Manager of Creative Development",
+      "organization": "Open House Fasilkom UI 2026",
+      "description": "Managing design sprints, visual identity, and event theme execution.",
+      "category": "COMMITTEE",
+      "is_ongoing": true,
+      "image_url": "/static/img/OH26.jpg"
+    }
+  },
+  {
+    "model": "main.experience",
+    "fields": {
+      "title": "Expert Staff of Visual Design",
+      "organization": "COMPFEST 18",
+      "description": "Creating high-quality digital designs and visual branding for national tech events.",
+      "category": "COMMITTEE",
+      "is_ongoing": true,
+      "image_url": "/static/img/COMPFEST.jpg"
+    }
+  },
+  {
+    "model": "main.experience",
+    "fields": {
+      "title": "Staff of Academics & Mentor",
+      "organization": "Dasar-Dasar Pemrograman 0",
+      "description": "Mentoring freshman students and managing course materials for foundational programming.",
+      "category": "COMMITTEE",
+      "is_ongoing": false,
+      "image_url": "/static/img/DDP0.jpg"
+    }
+  },
+  {
+    "model": "main.experience",
+    "fields": {
+      "title": "Member of RISTEK's Game Development",
+      "organization": "RISTEK Fasilkom UI",
+      "description": "Collaborating on game design, art assets, and interactive mechanics.",
+      "category": "ORGANIZATION",
+      "is_ongoing": false,
+      "image_url": "/static/img/RISTEK.jpg"
+    }
+  },
+  {
+    "model": "main.experience",
+    "fields": {
+      "title": "Staff of Academic & Tutoring",
+      "organization": "BETIS Fasilkom UI",
+      "description": "Teaching high school students in free college preparation classes.",
+      "category": "COMMITTEE",
+      "is_ongoing": false,
+      "image_url": "/static/img/BETIS.jpg"
+    }
+  },
+  {
+    "model": "main.experience",
+    "fields": {
+      "title": "UIUX Designer Intern",
+      "organization": "Sekolah BEM Fasilkom UI",
+      "description": "Designing user experience and interface flows for internal student tools.",
+      "category": "INTERNSHIP",
+      "is_ongoing": false,
+      "image_url": "/static/img/BEM.jpg"
+    }
+  },
+  {
+    "model": "main.experience",
+    "fields": {
+      "title": "Staff of Visual Design",
+      "organization": "Open House Fasilkom UI 2025",
+      "description": "Designing visual marketing collateral and social media content.",
+      "category": "COMMITTEE",
+      "is_ongoing": false,
+      "image_url": "/static/img/OH25.jpg"
+    }
+  }
+]
