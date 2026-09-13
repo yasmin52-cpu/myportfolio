@@ -140,5 +140,109 @@
       "is_ongoing": false,
       "image_url": "/static/img/OH25.jpg"
     }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Character 1", "category": "characters", "image_url": "/static/img/character_1.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Character 2", "category": "characters", "image_url": "/static/img/character_2.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Character 3", "category": "characters", "image_url": "/static/img/character_3.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Character 4", "category": "characters", "image_url": "/static/img/character_4.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Character 5", "category": "characters", "image_url": "/static/img/character_5.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Character 6", "category": "characters", "image_url": "/static/img/character_6.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Character 7", "category": "characters", "image_url": "/static/img/character_7.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Background 1", "category": "backgrounds", "image_url": "/static/img/bg1.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Background 2", "category": "backgrounds", "image_url": "/static/img/bg2.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Background 3", "category": "backgrounds", "image_url": "/static/img/bg3.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Background 4", "category": "backgrounds", "image_url": "/static/img/bg4.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Background 5", "category": "backgrounds", "image_url": "/static/img/bg5.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Icon 1", "category": "icons", "image_url": "/static/img/icon1.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Icon 2", "category": "icons", "image_url": "/static/img/icon2.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Icon 3", "category": "icons", "image_url": "/static/img/icon3.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Icon 4", "category": "icons", "image_url": "/static/img/icon4.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Icon 5", "category": "icons", "image_url": "/static/img/icon5.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Icon 6", "category": "icons", "image_url": "/static/img/icon6.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Icon 7", "category": "icons", "image_url": "/static/img/icon7.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Icon 8", "category": "icons", "image_url": "/static/img/icon8.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Icon 9", "category": "icons", "image_url": "/static/img/icon9.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Icon 10", "category": "icons", "image_url": "/static/img/icon10.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Tilemap 1", "category": "tilemaps", "image_url": "/static/img/tile1.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Tilemap 2", "category": "tilemaps", "image_url": "/static/img/tile2.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Spritesheet 1", "category": "spritesheets", "image_url": "/static/img/sprite1.png" }
+  },
+  {
+    "model": "main.artitem",
+    "fields": { "title": "Spritesheet 2", "category": "spritesheets", "image_url": "/static/img/sprite2.png" }
   }
 ]
