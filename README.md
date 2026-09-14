@@ -215,3 +215,83 @@ Dengan demikian, proses pengerjaan terdiri dari siklus **mencoba → menguji →
 | Git dan submission                    | Gemini | Memahami proses commit, push, dan mendapatkan URL commit | Memberikan langkah `git status`, `git add`, `git commit`, `git push`, dan cara mengambil URL commit                                 | Menjalankan proses Git dan memverifikasi hasil                                                                       | Digunakan untuk proses submission                     |
 
 ---
+
+# Tugas 2
+
+## Implementasi Model-View-Template (MVT)
+
+Struktur data yang digunakan pada aplikasi main terdiri dari beberapa model, yaitu:
+
+Education: menyimpan data pendidikan seperti institution, faculty, start_period, end_period, dan logo_url.
+Experience: menyimpan data pengalaman seperti title, organization, description, category, is_ongoing, dan image_url.
+Project: menyimpan data project seperti title, description, image_url, dan play_url.
+ArtItem: menyimpan data art portfolio seperti title, category, dan image_url.
+
+## Pertanyaan Reflektif
+
+### 1. Alur request dari browser sampai halaman ditampilkan
+
+Ketika pengguna membuka halaman portfolio, request dari browser pertama kali diproses oleh urls.py di level project (myportfolio/urls.py). Dari sana, request diteruskan ke main/urls.py menggunakan include().
+
+Di main/urls.py, URL tersebut kemudian diarahkan ke function view yang sesuai di main/views.py. View mengambil data dari model menggunakan Django ORM, misalnya dengan Experience.objects.all() untuk mengambil seluruh data experience.
+
+Data yang sudah diambil kemudian dimasukkan ke dalam context dan dikirim ke template menggunakan render(). Di dalam template seperti experience.html, data tersebut ditampilkan menggunakan Django Template Language, misalnya dengan {% for item in ... %} untuk melakukan perulangan pada setiap data.
+
+Jika tidak ada data yang ditemukan, template juga memiliki {% empty %} untuk menampilkan kondisi ketika queryset kosong.
+
+Setelah template selesai diproses oleh Django, hasilnya berupa HTML dikirim kembali ke browser dan ditampilkan sebagai halaman portfolio.
+
+Secara sederhana, alurnya adalah:
+
+Browser -> URL -> View -> Model/Database -> Template -> HTML -> Browser
+
+Alur ini mengikuti konsep MVT yang digunakan pada bagian Experience di Tutorial 02.
+
+
+### 2. Mengapa data disimpan di Model, bukan ditulis langsung di Template
+
+Saya menyimpan data portfolio di Model/database supaya data dan tampilan tidak tercampur. Model digunakan untuk menyimpan datanya, sedangkan Template digunakan untuk mengatur bagaimana data tersebut ditampilkan.
+
+Hal ini terasa ketika saya mengganti daftar project yang sebelumnya digunakan. Data project awal diganti menjadi project final seperti Save the Patient!, Road to the Cinema, Survi-vim, Wait, New Rule!, dan Brine & Blades.
+
+Setelah menggunakan Model, perubahan tersebut bisa dilakukan dari data yang dimasukkan ke database tanpa perlu mengubah struktur HTML di template. Saya menggunakan fixture initial_data.json yang kemudian dimasukkan ke database menggunakan manage.py loaddata.
+
+Kalau data masih ditulis langsung di HTML seperti pada Tugas 1, setiap kali ingin mengganti atau menambah project saya harus mengedit HTML secara manual. Selain lebih merepotkan, cara tersebut juga lebih berisiko membuat struktur HTML yang sudah dibuat menjadi berubah atau rusak.
+
+Menurut saya, penggunaan Model juga membuat project lebih mudah dikembangkan. Misalnya, jika nantinya ingin menambahkan field baru atau membuat halaman detail untuk setiap project, perubahan tersebut bisa dilakukan pada Model dan View tanpa harus mengubah keseluruhan struktur Template.
+
+### 3. Perbedaan `makemigrations` dan `migrate`
+
+python manage.py makemigrations digunakan untuk membuat file migration berdasarkan perubahan yang dilakukan pada models.py. File tersebut berisi instruksi perubahan struktur database, misalnya ketika ada model atau field baru.
+
+Perintah ini belum mengubah database secara langsung. Jadi, makemigrations bisa dibilang adalah tahap untuk membuat file yang berisi perubahan yang perlu dilakukan.
+
+Setelah itu, python manage.py migrate digunakan untuk menerapkan migration tersebut ke database. Pada tahap ini, Django benar-benar melakukan perubahan pada database sesuai dengan file migration yang sudah dibuat.
+
+Jadi:
+
+makemigrations -> membuat file migration.
+migrate -> menerapkan migration ke database.
+
+Saya sempat mengalami masalah ketika struktur primary key pada model Experience berubah dari UUID menjadi BigAutoField. Migration sebelumnya sudah menggunakan UUID, sedangkan migration baru mencoba mengubahnya menjadi bigint. Akibatnya, saat menjalankan migrate, muncul error:
+
+django.db.utils.ProgrammingError: cannot cast type uuid to bigint
+
+Masalah tersebut terjadi karena data yang sudah ada di database menggunakan tipe UUID, sehingga PostgreSQL tidak bisa langsung mengubah nilainya menjadi bigint.
+
+Untuk mengatasinya, saya melakukan reset pada tabel dan migration yang terkait dengan app main, kemudian membuat migration baru berdasarkan struktur Model yang sudah diperbaiki. Setelah itu saya menjalankan migrate kembali dan migration berhasil diterapkan.
+
+Dari masalah ini, saya jadi lebih memahami bahwa file migration dan kondisi database harus tetap sesuai. Kalau struktur Model sudah berubah tetapi database masih menggunakan struktur lama yang tidak kompatibel, proses migration bisa menghasilkan error.
+
+## Ringkasan AI Log
+ 
+| Tahap | AI | Tujuan/Prompt | Bantuan AI | Tindakan Saya | Hasil |
+|---|---|---|---|---|---|
+| Debug shell | Gemini 3.1 Pro | Mengatasi `IndentationError` pada blok `with` di Python shell | Menjelaskan penyebab, menyarankan alternatif tanpa `with` | Menjalankan ulang perintah tanpa `with` | `cursor.execute` berhasil dijalankan |
+| Migrasi database | Gemini 3.1 Pro | Mengatasi error `cannot cast type uuid to bigint` saat `migrate` | Mendiagnosis konflik tipe id UUID→bigint, memberi langkah drop table + reset migrasi | Drop tabel, hapus record migrasi, reset file migrasi lokal, migrate ulang | Migrasi berhasil (status OK) |
+| Seeding data (percobaan 1) | Gemini 3.1 Pro | Mengisi data Education/Experience/Project/ArtItem via shell | Skrip Python multi-baris | Menyalin skrip ke shell | `SyntaxError` akibat copy-paste, tidak berhasil |
+| Seeding data (percobaan 2) | Gemini 3.1 Pro | Memperbaiki `SyntaxError` | Menyarankan satu baris per `objects.create()` | Menyalin ulang skrip | Masih menemui kendala copy-paste |
+| Seeding data (percobaan 3) | Gemini 3.1 Pro | Menjalankan skrip tanpa masalah interaktif | Menyarankan `manage.py shell -c '...'` | Menjalankan perintah tersebut | Masih ada kendala |
+| Seeding data (fixture) | Gemini 3.1 Pro | Mengatasi kendala copy-paste skrip panjang | Menyusun fixture `initial_data.json` + `loaddata` | Membuat file, push ke GitHub, pull di PWS, `loaddata` | Membuat skrip yang bisa masukin datanya dari json gitu gatau |
+| Fixture Art Portfolio | Gemini 3.1 Pro | Melengkapi fixture dengan data Art Portfolio | Memperluas `initial_data.json` dengan seluruh ArtItem | Mengganti isi file, `loaddata` ulang | Membuat fixture sesuai data |
+| Favicon | Gemini 3.1 Pro | Mengganti favicon default PWS | Menjelaskan tag `<link rel="icon">` | Menambah file favicon, commit, push, hard refresh | Bisa |
