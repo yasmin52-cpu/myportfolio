@@ -11,25 +11,20 @@ def show_main(request):
     return render(request, "index.html", context)
 
 def show_experience(request):
-    experiences = Experience.objects.all()
-    educations = Education.objects.all()
     context = {
-        'experience_list': experiences,
-        'education_list': educations,
+        'experience_list': Experience.objects.all(),
+        'education_list': Education.objects.all(),
     }
     return render(request, "experience.html", context)
 
 def show_projects(request):
-    projects = Project.objects.all()
     context = {
-        'project_list': projects,
+        'project_list': Project.objects.all(),
     }
     return render(request, "project.html", context)
 
 def show_art(request):
-    art_items = ArtItem.objects.all()
     context = {
-        'art_list': art_items,
         'characters': ArtItem.objects.filter(category='characters'),
         'backgrounds': ArtItem.objects.filter(category='backgrounds'),
         'icons': ArtItem.objects.filter(category='icons'),

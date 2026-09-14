@@ -1,5 +1,7 @@
 from django.test import TestCase, Client
+from django.urls import reverse
 from main.models import Education, Experience, Project, ArtItem
+
 
 class PortfolioModelTests(TestCase):
     def setUp(self):
@@ -10,23 +12,20 @@ class PortfolioModelTests(TestCase):
             end_period="Present",
             logo_url="/static/img/Fasilkom.png"
         )
-        
         Project.objects.create(
             title="KALANANTI",
             description="A narrative mystery game following two college students investigating their classmate's disappearance while exploring mental health and gender equality.",
             image_url="/static/img/KALANANTI.png",
             play_url="https://drive.google.com/file/d/1OK_3xH_K_dboh0rw14Nva7aNlUxKsUlb/view?usp=drive_link"
         )
-        
         Experience.objects.create(
             title="Manager of Creative Development",
             organization="Open House Fasilkom UI 2026",
             description="Managing design sprints, visual identity, and event theme execution.",
-            category="COMMITTEE",
+            category="ORGANIZATION",
             is_ongoing=True,
             image_url="/static/img/OH26.jpg"
         )
-        
         ArtItem.objects.create(
             title="Spritesheet 2",
             category="spritesheets",
@@ -45,7 +44,7 @@ class PortfolioModelTests(TestCase):
 
     def test_experience_data(self):
         exp = Experience.objects.get(title="Manager of Creative Development")
-        self.assertEqual(exp.category, "COMMITTEE")
+        self.assertEqual(exp.category, "ORGANIZATION")
         self.assertEqual(exp.organization, "Open House Fasilkom UI 2026")
         self.assertTrue(exp.is_ongoing)
 
@@ -56,9 +55,81 @@ class PortfolioModelTests(TestCase):
 
 
 class PortfolioViewTests(TestCase):
+    """
+    Covers the 3 required cases per page:
+    1. URL is accessible and uses the correct template.
+    2. Model data appears in the rendered HTML when it exists.
+    3. The empty-state message appears when there is no data.
+    """
+
     def setUp(self):
         self.client = Client()
 
     def test_main_routing(self):
-        response = self.client.get('/')
+        response = self.client.get(reverse('main:show_main'))
         self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'index.html')
+
+    # ---- Projects page ----
+
+    def test_projects_url_uses_correct_template(self):
+        response = self.client.get(reverse('main:show_projects'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'project.html')
+
+    def test_projects_data_appears_when_it_exists(self):
+        Project.objects.create(
+            title="KALANANTI",
+            description="A narrative mystery game.",
+            image_url="/static/img/KALANANTI.png",
+            play_url="https://example.com"
+        )
+        response = self.client.get(reverse('main:show_projects'))
+        self.assertContains(response, "KALANANTI")
+
+    def test_projects_empty_state_appears_when_no_data(self):
+        response = self.client.get(reverse('main:show_projects'))
+        self.assertContains(response, "Belum ada proyek yang ditambahkan.")
+
+    # ---- Experience page ----
+
+    def test_experience_url_uses_correct_template(self):
+        response = self.client.get(reverse('main:show_experience'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'experience.html')
+
+    def test_experience_data_appears_when_it_exists(self):
+        Experience.objects.create(
+            title="Manager of Creative Development",
+            organization="Open House Fasilkom UI 2026",
+            description="Managing design sprints.",
+            category="ORGANIZATION",
+            is_ongoing=True,
+            image_url="/static/img/OH26.jpg"
+        )
+        response = self.client.get(reverse('main:show_experience'))
+        self.assertContains(response, "Open House Fasilkom UI 2026")
+
+    def test_experience_empty_state_appears_when_no_data(self):
+        response = self.client.get(reverse('main:show_experience'))
+        self.assertContains(response, "Belum ada pengalaman yang ditambahkan.")
+
+    # ---- Art page ----
+
+    def test_art_url_uses_correct_template(self):
+        response = self.client.get(reverse('main:show_art'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'art.html')
+
+    def test_art_data_appears_when_it_exists(self):
+        ArtItem.objects.create(
+            title="Spritesheet 2",
+            category="spritesheets",
+            image_url="/static/img/sprite2.png"
+        )
+        response = self.client.get(reverse('main:show_art'))
+        self.assertContains(response, "Spritesheet 2")
+
+    def test_art_empty_state_appears_when_no_data(self):
+        response = self.client.get(reverse('main:show_art'))
+        self.assertContains(response, "Belum ada gambar karakter.")
