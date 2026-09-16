@@ -156,5 +156,14 @@ MAILERS = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# gunakan https:// untuk trailing urlnya
-CSRF_TRUSTED_ORIGINS = ["https://yasmin52-myportfolio.pws.cs.ui.ac.id/"]
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1",
+    "http://localhost",
+    "https://yasmin52-myportfolio.pws.cs.ui.ac.id",
+]
+
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    "yasmin52-myportfolio.pws.cs.ui.ac.id",
+]
