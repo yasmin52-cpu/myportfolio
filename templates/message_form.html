@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main class="portfolio-section message-section">
+    <div class="container">
+        <div class="message-card">
+            <h2>Send a message to Yasmin!</h2>
+            <p class="subtitle">Leave a message below!</p>
+
+            <form method="POST" action="{% url 'main:send_message' %}" class="project-form">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}
+                            <p class="form-error">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <div class="form-actions">
+                    <button type="submit" class="button">Send!</button>
+                    <a href="{% url 'main:show_main' %}" class="button button-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Daftar Pesan Masuk (JSON Data Delivery Result) -->
+        <div style="max-width: 580px; margin: 3rem auto 0; text-align: left;">
+            <h3 style="color: var(--accent-dark); margin-bottom: 1rem;">Messages Received:</h3>
+            
+            {% for msg in message_list %}
+                <div style="background: white; padding: 1.25rem; border-radius: var(--radius); margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(227, 101, 193, 0.15);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <strong style="color: var(--accent-dark);">{{ msg.sender }}</strong>
+                        {% include "message_delete_modal.html" with msg=msg %}
+                    </div>
+                    <p style="color: var(--ink); font-size: 0.95rem;">{{ msg.content }}</p>
+                    <small style="color: var(--accent); font-size: 0.75rem;">{{ msg.time_sent }}</small>
+                </div>
+            {% empty %}
+                <p style="color: var(--text-muted);">No message yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</main>
+{% endblock %}

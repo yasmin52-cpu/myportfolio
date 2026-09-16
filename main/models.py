@@ -49,3 +49,13 @@ class ArtItem(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.category})"
+
+class Message(models.Model):
+    sender = models.CharField(max_length=100)
+    content = models.TextField()
+
+    # Menyimpan waktu pesan dikirim
+    time_sent = models.DateTimeField(auto_now_add=True) 
+
+    def __str__(self):
+        return f"A message from {self.sender}"

@@ -523,6 +523,211 @@ h1, .brand {
     text-align: center;
 }
 
+/* Message Section & Form Styling */
+.message-section {
+    padding: 3rem 0;
+}
+
+.message-card {
+    max-width: 580px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    box-shadow: 0 8px 20px rgba(227, 101, 193, 0.2);
+    text-align: left;
+}
+
+.message-card h2 {
+    color: var(--accent-dark);
+    font-family: "Space Grotesk", -apple-system, sans-serif;
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.message-card .subtitle {
+    color: var(--accent-dark);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+}
+
+.project-form {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+    font-size: 0.9rem;
+}
+
+/* Kunci utama mempercantik input & textarea */
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem 1rem;
+    background-color: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--ink);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(227, 101, 193, 0.25);
+}
+
+.form-error {
+    color: #b42318;
+    font-size: 0.85rem;
+    margin-top: 0.35rem;
+}
+
+/* Action Buttons */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.75rem;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50px;
+    padding: 0.65rem 1.6rem;
+    background: var(--accent-dark);
+    color: var(--paper);
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.button:hover {
+    background-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.button-secondary {
+    background: transparent;
+    color: var(--accent-dark);
+    border: 1.5px solid var(--accent-dark);
+}
+
+.button-secondary:hover {
+    background: var(--paper);
+    color: var(--accent-dark);
+}
+
+/* Styling Popover Modal Hapus Pesan */
+.project-delete-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 1rem;
+    border: 0;
+    background: transparent;
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit; /* Menyamakan font dengan parent/body */
+}
+
+.project-delete-modal:popover-open {
+    display: flex;
+}
+
+/* Latar belakang redup */
+.project-delete-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding: 0;
+    background: rgba(28, 25, 23, 0.4);
+    backdrop-filter: blur(2px);
+    cursor: default;
+}
+
+/* Kartu Utama Modal */
+.project-delete-modal__content {
+    position: relative;
+    z-index: 1;
+    width: min(90%, 420px);
+    padding: 1.75rem;
+    background: #ffffff;
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(227, 101, 193, 0.25);
+    font-family: inherit;
+}
+
+.project-delete-modal__content h2 {
+    margin: 0 0 0.5rem;
+    font-family: inherit;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--accent-dark);
+}
+
+.project-delete-modal__content p {
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 1.5rem;
+}
+
+/* Tombol Akses Modal */
+.project-delete-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.project-delete-modal__actions button {
+    font-family: inherit;
+}
+
+.project-delete-modal__actions form {
+    margin: 0;
+}
+
+/* Style tombol danger */
+.button-danger {
+    background-color: #b42318 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.button-danger:hover {
+    background-color: #912018 !important;
+}
+
 @media (max-width: 600px) {
     .hero-grid {
         grid-template-columns: 1fr;

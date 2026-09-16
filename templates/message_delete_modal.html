@@ -1,0 +1,37 @@
+<button type="button"
+        class="button button-danger"
+        popovertarget="delete-message-{{ msg.id }}"
+        style="padding: 0.35rem 0.8rem; font-size: 0.8rem;">
+    Hapus
+</button>
+
+<div id="delete-message-{{ msg.id }}"
+     class="project-delete-modal"
+     popover="auto"
+     role="dialog">
+    
+    <!-- Backdrop/Overlay -->
+    <button type="button"
+            class="project-delete-modal__backdrop"
+            popovertarget="delete-message-{{ msg.id }}"
+            popovertargetaction="hide"></button>
+            
+    <!-- Content Box -->
+    <div class="project-delete-modal__content">
+        <h2>Delete message?</h2>
+        <p>Are you sure you want to delete the message from <strong>{{ msg.sender }}</strong>?</p>
+        
+        <div class="project-delete-modal__actions">
+            <button type="button"
+                    class="button button-secondary"
+                    popovertarget="delete-message-{{ msg.id }}"
+                    popovertargetaction="hide">
+                Cancel
+            </button>
+            <form method="post" action="{% url 'main:delete_message' msg.id %}">
+                {% csrf_token %}
+                <button type="submit" class="button button-danger">Yes, delete</button>
+            </form>
+        </div>
+    </div>
+</div>

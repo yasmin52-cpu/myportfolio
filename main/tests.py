@@ -55,13 +55,6 @@ class PortfolioModelTests(TestCase):
 
 
 class PortfolioViewTests(TestCase):
-    """
-    Covers the 3 required cases per page:
-    1. URL is accessible and uses the correct template.
-    2. Model data appears in the rendered HTML when it exists.
-    3. The empty-state message appears when there is no data.
-    """
-
     def setUp(self):
         self.client = Client()
 
