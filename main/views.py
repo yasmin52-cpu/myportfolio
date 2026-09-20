@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Experience, Education, Project, ArtItem
 from django.contrib import messages
-from .forms import MessageForm
+from .forms import MessageForm, ProjectForm
 from django.http import HttpResponse
 from django.core import serializers
 from main.models import Message
@@ -16,6 +16,7 @@ def show_main(request):
     }
     return render(request, "index.html", context)
 
+# Experiences
 def show_experience(request):
     context = {
         'experience_list': Experience.objects.all(),
@@ -23,12 +24,45 @@ def show_experience(request):
     }
     return render(request, "experience.html", context)
 
-def show_projects(request):
+
+# Projects
+def show_project(request):
+    projects = Project.objects.all()
     context = {
         'project_list': Project.objects.all(),
     }
     return render(request, "project.html", context)
 
+def create_project(request):
+    form = ProjectForm(request.POST or None)
+    if form.is_valid() and request.method == "POST":
+        form.save()
+        return redirect('main:show_project')
+    
+    context = {'form': form, 'title': 'Add New Project'}
+    return render(request, 'message_form.html', context)
+
+def update_project(request, id):
+    project = get_object_or_404(Project, pk=id)
+    form = ProjectForm(request.POST or None, instance=project)
+    
+    if form.is_valid() and request.method == "POST":
+        form.save()
+        return redirect('main:show_project')
+        
+    context = {'form': form, 'title': 'Edit Project'}
+    return render(request, 'message_form.html', context)
+
+def delete_project(request, id):
+    project = get_object_or_404(Project, pk=id)
+    project.delete()
+    return redirect('main:show_project')
+
+def show_json_projects(request):
+    data = Project.objects.all()
+    return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+
+# Art Stuff
 def show_art(request):
     context = {
         'characters': ArtItem.objects.filter(category='characters'),
@@ -39,6 +73,7 @@ def show_art(request):
     }
     return render(request, "art.html", context)
 
+# Message
 def send_message(request):
     form = MessageForm(request.POST or None)
     

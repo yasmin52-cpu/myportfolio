@@ -66,7 +66,7 @@ class PortfolioViewTests(TestCase):
     # ---- Projects page ----
 
     def test_projects_url_uses_correct_template(self):
-        response = self.client.get(reverse('main:show_projects'))
+        response = self.client.get(reverse('main:show_project'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'project.html')
 
@@ -77,11 +77,11 @@ class PortfolioViewTests(TestCase):
             image_url="/static/img/KALANANTI.png",
             play_url="https://example.com"
         )
-        response = self.client.get(reverse('main:show_projects'))
+        response = self.client.get(reverse('main:show_project'))
         self.assertContains(response, "KALANANTI")
 
     def test_projects_empty_state_appears_when_no_data(self):
-        response = self.client.get(reverse('main:show_projects'))
+        response = self.client.get(reverse('main:show_project'))
         self.assertContains(response, "Belum ada proyek yang ditambahkan.")
 
     # ---- Experience page ----
