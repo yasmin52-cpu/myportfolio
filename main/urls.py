@@ -2,6 +2,10 @@ from django.urls import path
 from main.views import (
     show_main,
     show_experience,
+    create_experience,
+    update_experience,
+    delete_experience,
+    show_json_experiences,
     show_project,
     create_project,
     update_project,
@@ -26,4 +30,9 @@ urlpatterns = [
     path('pesan/', send_message, name='send_message'),
     path("api/messages/", get_messages_json, name="get_messages_json"),
     path("pesan/<int:message_id>/delete/", delete_message, name="delete_message"),
+    path('experience/', show_experience, name='show_experience'),
+    path('experience/add/', create_experience, name='create_experience'),
+    path('experience/edit/<int:id>/', update_experience, name='update_experience'),
+    path('experience/delete/<int:id>/', delete_experience, name='delete_experience'),
+    path('experience/json/', show_json_experiences, name='show_json_experiences'),
 ]

@@ -32,6 +32,11 @@
 <section class="portfolio-section" id="experiences">
     <div class="container">
         <h2 class="section-badge">Experiences</h2>
+
+        <div class="action-header" style="margin-bottom: 20px;">
+            <a href="{% url 'main:create_experience' %}" class="btn-primary">+ Tambah Experience Baru</a>
+        </div>
+
         <div class="experience-list">
             {% for exp in experience_list %}
             <article class="card experience-card">
@@ -49,6 +54,12 @@
                             {% else %}
                             <p class="role-period">Selesai</p>
                             {% endif %}
+
+                            <div class="card-actions" style="margin-top: 15px; display: flex; gap: 10px;">
+                                <a href="{% url 'main:update_experience' exp.id %}" class="btn-secondary">Edit</a>
+                                <a href="{% url 'main:delete_experience' exp.id %}" class="btn-danger" onclick="return confirm('Are you sure you want to delete this experience?')">Yes, delete</a>
+                            </div>
+
                         </div>
                     </div>
                 </div>

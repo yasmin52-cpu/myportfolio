@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from .models import Experience, Education, Project, ArtItem
 from django.contrib import messages
-from .forms import MessageForm, ProjectForm
+from .forms import MessageForm, ProjectForm, ExperienceForm
 from django.http import HttpResponse
 from django.core import serializers
 from main.models import Message
@@ -24,10 +24,39 @@ def show_experience(request):
     }
     return render(request, "experience.html", context)
 
+def create_experience(request):
+    form = ExperienceForm(request.POST or None)
+
+    if form.is_valid() and request.method == "POST":
+        form.save()
+        return redirect('main:show_experience')
+        
+    context = {'form': form, 'title': 'Add New Experience'}
+    return render(request, 'message_form.html', context)
+
+def update_experience(request, id):
+    experience = get_object_or_404(Experience, pk=id)
+    
+    form = ExperienceForm(request.POST or None, instance=experience)
+    
+    if form.is_valid() and request.method == "POST":
+        form.save()
+        return redirect('main:show_experience')
+        
+    context = {'form': form, 'title': 'Edit Experience'}
+    return render(request, 'message_form.html', context)
+
+def delete_experience(request, id):
+    experience = get_object_or_404(Experience, pk=id)
+    experience.delete()
+    return redirect('main:show_experience')
+
+def show_json_experiences(request):
+    data = Experience.objects.all()
+    return HttpResponse(serializers.serialize("json", data), content_type="application/json")
 
 # Projects
 def show_project(request):
-    projects = Project.objects.all()
     context = {
         'project_list': Project.objects.all(),
     }

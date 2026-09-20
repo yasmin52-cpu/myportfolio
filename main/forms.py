@@ -1,4 +1,4 @@
-from django.forms import ModelForm, TextInput, Textarea, URLInput
+from django.forms import ModelForm, TextInput, Textarea, URLInput, RadioSelect, CheckboxInput
 from main.models import Message, Project, Experience, ArtItem
 
 class MessageForm(ModelForm):
@@ -31,3 +31,25 @@ class ProjectForm(ModelForm):
             "play_url": URLInput(attrs={"placeholder": "https://...", "class": "form-control"}),
         }
 
+class ExperienceForm(ModelForm):
+    class Meta:
+        model = Experience
+        fields = ["title", "organization", "description", "category", "is_ongoing", "image_url"]
+        
+        labels = {
+            "title": "Role / Position",
+            "organization": "Organization / Company",
+            "description": "Description",
+            "category": "Category",
+            "is_ongoing": "Ongoing",
+            "image_url": "Image URL",
+        }
+        
+        widgets = {
+            "title": TextInput(attrs={"placeholder": "Contoh: Creative Manager", "class": "form-control"}),
+            "organization": TextInput(attrs={"placeholder": "Contoh: Open House Fasilkom", "class": "form-control"}),
+            "description": Textarea(attrs={"placeholder": "Jelaskan peran dan tugasmu...", "rows": 4, "class": "form-control"}),
+            "category": RadioSelect(attrs={'class' : 'category-radio-group'}),
+            "is_ongoing": CheckboxInput(attrs={'class': 'form-checkbox'}),
+            "image_url": TextInput(attrs={"placeholder": "Contoh: https://drive.google.com/thumbnail?id=...&sz=w1000", "class": "form-control"}),
+        }
