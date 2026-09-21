@@ -717,6 +717,42 @@ h1, .brand {
     margin: 0;
 }
 
+/* Styling umum untuk semua button kapsul */
+.btn-action {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+/* Tombol Edit */
+.btn-edit {
+    background-color: #f0f0f0;
+    color: #4a4a4a;
+    border: 1px solid #ccc;
+}
+
+.btn-edit:hover {
+    background-color: #e2e2e2;
+    color: #222;
+}
+
+/* Tombol Delete */
+.btn-delete {
+    background-color: #ffe6e6;
+    color: #d93838;
+    border: 1px solid #f5c2c2;
+}
+
+.btn-delete:hover {
+    background-color: #ffd1d1;
+    color: #b82525;
+}
+
 /* Style tombol danger */
 .button-danger {
     background-color: #b42318 !important;
