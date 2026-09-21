@@ -295,3 +295,201 @@ Dari masalah ini, saya jadi lebih memahami bahwa file migration dan kondisi data
 | Seeding data (fixture) | Gemini 3.1 Pro | Mengatasi kendala copy-paste skrip panjang | Menyusun fixture `initial_data.json` + `loaddata` | Membuat file, push ke GitHub, pull di PWS, `loaddata` | Membuat skrip yang bisa masukin datanya dari json gitu gatau |
 | Fixture Art Portfolio | Gemini 3.1 Pro | Melengkapi fixture dengan data Art Portfolio | Memperluas `initial_data.json` dengan seluruh ArtItem | Mengganti isi file, `loaddata` ulang | Membuat fixture sesuai data |
 | Favicon | Gemini 3.1 Pro | Mengganti favicon default PWS | Menjelaskan tag `<link rel="icon">` | Menambah file favicon, commit, push, hard refresh | Bisa |
+
+---
+
+# Tugas 3 — Form & Data Delivery
+
+## Deskripsi
+
+Bagian ini melanjutkan portofolio yang dibangun pada Tugas 1 (static site) dan Tugas 2 (MVT dengan model, view, dan template). Pada Tugas 3, fitur Form & Data Delivery diterapkan pada **tiga bagian**: **Experience**, **Project**, dan sebuah fitur baru berupa **Message/Contact Form**.
+
+Fitur utama yang ditambahkan:
+
+* Refactor seluruh template agar menggunakan `{% extends 'base.html' %}`, menghilangkan duplikasi header/nav/footer yang sebelumnya ditulis ulang di setiap halaman (*sebenarnya ini sudah lakukan di tugas 2 karena tidak tahu bahwa diminta untuk diimplementasikannya di tugas 3).
+* `ModelForm` untuk `Experience` (`ExperienceForm`), `Project` (`ProjectForm`), dan `Message` (`MessageForm`) di `main/forms.py`.
+* Create, update, dan delete data untuk `Experience` dan `Project` lewat form.
+* Create dan delete data untuk `Message` (fitur kirim pesan/kontak), termasuk pengambilan data lewat JSON dan deserialisasi untuk ditampilkan ulang di halaman.
+* Endpoint JSON untuk `Experience`, `Project`, dan `Message`.
+
+## Fitur
+
+* **Template inheritance** — `base.html` menjadi root template dengan `{% block title %}`, `{% block extra_head %}`, `{% block brand_name %}`, `{% block footer_name %}`, dan `{% block content %}`. Seluruh halaman (`index.html`, `experience.html`, `project.html`, `art.html`, `message_form.html`) meng-extend `base.html` ini.
+* **CRUD Experience** — `show_experience` (read), `create_experience` (create), `update_experience` (update), `delete_experience` (delete), menggunakan `ExperienceForm` dengan widget `RadioSelect` untuk field `category` dan `CheckboxInput` untuk `is_ongoing`.
+* **CRUD Project** — `show_project`, `create_project`, `update_project`, `delete_project`, menggunakan `ProjectForm`.
+* **JSON Data Delivery** — `show_json_experiences` (`/experience/json/`) dan `show_json_projects` (`/projects/json/`) mengembalikan seluruh data lewat `django.core.serializers`.
+* **Message/Contact Form** — `send_message` (create + tampilkan ulang lewat JSON+deserialize), `get_messages_json` (`/api/messages/`, mendukung filter `?sender=`), `delete_message` (delete via form POST + `{% csrf_token %}` dalam modal popover `message_delete_modal.html`).
+* **Empty state** — pesan "Belum ada ... yang ditambahkan" muncul pada `experience.html`, `project.html`, dan "No message yet." pada `message_form.html` ketika data kosong.
+* Bagian **Education** dan **Art Portfolio** tetap seperti Tugas 2 — masih read-only (belum ada form create/update/delete untuk kedua bagian ini pada tugas ini karena tidak dilihatnya urgensi menambahkan CRUD experience di kedua bagian ini).
+
+Catatan jujur: `MessageForm` hanya memiliki 2 field selain `id`/`time_sent` (`sender`, `content`), sehingga persyaratan "minimal 3 field selain id dan timestamp" pada tugas ini dipenuhi lewat `ExperienceForm` (6 field: `title`, `organization`, `description`, `category`, `is_ongoing`, `image_url`) dan `ProjectForm` (4 field: `title`, `description`, `image_url`, `play_url`), bukan lewat `MessageForm`.
+
+## Struktur/Implementasi
+
+* **Model** (`main/models.py`) — `Experience`, `Education`, `Project`, `ArtItem` (dari Tugas 2), ditambah `Message` (baru di Tugas 3: `sender`, `content`, `time_sent`).
+* **ModelForm** (`main/forms.py`) — `ExperienceForm`, `ProjectForm`, `MessageForm`, masing-masing menentukan `fields`, `labels`, dan `widgets` sesuai tipe data field pada model terkait.
+* **Views** (`main/views.py`) — fungsi `show_*` untuk menampilkan data, `create_*`/`update_*`/`delete_*` untuk CRUD, `show_json_*`/`get_messages_json` untuk JSON delivery.
+* **URLs** (`main/urls.py`) — setiap fungsi didaftarkan dengan `name` unik, misalnya `create_experience`, `update_project`, `show_json_experiences`.
+* **Templates** — `base.html` sebagai root; `experience.html`, `project.html`, `art.html`, `message_form.html` meng-extend `base.html`; `message_delete_modal.html` sebagai partial yang di-`{% include %}` di dalam `message_form.html`.
+* **Serialization/Deserialization** — `django.core.serializers.serialize("json", queryset)` dipakai di `show_json_experiences`, `show_json_projects`, dan `get_messages_json` untuk mengubah `QuerySet` menjadi JSON. Di `send_message`, JSON hasil `get_messages_json` di-deserialize kembali lewat `serializers.deserialize("json", ...)` untuk membangun `message_list` yang ditampilkan di template.
+
+## Setup & Installation
+
+1. Clone repository dan masuk ke folder proyek:
+
+```bash
+git clone <url-repository-anda>
+cd myportfolio
+```
+
+2. Buat dan aktifkan virtual environment:
+
+```bash
+python -m venv env
+env\Scripts\activate
+```
+
+3. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+4. (Opsional, hanya untuk mode produksi/PostgreSQL) buat file `.env` berisi `PRODUCTION=True` beserta `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `SCHEMA` sesuai yang dibaca `portfolio/settings.py`. Untuk pengembangan lokal, `PRODUCTION` default bernilai `False` sehingga otomatis memakai SQLite (`db.sqlite3`) tanpa perlu file `.env`.
+
+5. Jalankan migration:
+
+```bash
+python manage.py migrate
+```
+
+6. Jalankan development server:
+
+```bash
+python manage.py runserver
+```
+
+7. Buka `http://127.0.0.1:8000/` pada browser.
+
+Website juga dapat diakses melalui deployment berikut:
+
+`https://yasmin52-myportfolio.pws.cs.ui.ac.id/`
+
+## Cara Menggunakan Fitur
+
+* **Experience** — buka `/experience/`, klik **"+ Tambah Experience Baru"** menuju `/experience/add/`, isi form (Role/Position, Organization, Description, Category via radio button, Ongoing via checkbox, Image URL), lalu submit. Klik **Edit** pada kartu untuk membuka `/experience/edit/<id>/`. Klik **"Yes, delete"** pada kartu untuk menghapus data lewat `/experience/delete/<id>/` (link dengan konfirmasi `confirm()` di browser).
+* **Project** — alur yang sama pada `/projects/`, `/projects/add/`, `/projects/edit/<id>/`, `/projects/delete/<id>/`.
+* **Data JSON** — akses langsung `/experience/json/` atau `/projects/json/` di browser untuk melihat data mentah dalam format JSON hasil `serializers.serialize`.
+* **Message/Contact** — buka `/pesan/`, isi Nama dan Pesan, submit. Pesan tersimpan lalu langsung ditampilkan ulang di bawah form (daftar `message_list`, hasil round-trip JSON + deserialize). Klik tombol **Delete** pada tiap pesan untuk membuka modal konfirmasi popover, lalu submit form POST ke `/pesan/<id>/delete/`. Endpoint `/api/messages/` juga bisa diakses langsung, dan mendukung filter `?sender=nama` untuk menyaring pesan berdasarkan pengirim.
+
+## Progress
+
+### Tutorial 03
+
+* Menambah form message anonymous yang bisa diisi semua orang
+
+### Individual Assignment 3
+
+* Membuat branch `feature/experiences-crud` untuk mengembangkan fitur Experience secara terpisah dari `main`.
+* Menambahkan `ExperienceForm` (ModelForm) di `main/forms.py`, serta view `create_experience`, `update_experience`, `delete_experience`, dan `show_json_experiences` di `main/views.py`.
+* Mendaftarkan seluruh URL baru tersebut di `main/urls.py`.
+* Memperbarui `experience.html` agar menampilkan tombol "Tambah", "Edit", dan "Yes, delete" pada setiap kartu.
+* Sempat mengalami masalah workflow Git — progres di branch `feature/projects-crud` belum ter-merge ke `main` sebelum membuat branch baru `feature/experiences-crud`, sehingga terlihat seperti "hilang". Masalah diselesaikan dengan meng-merge `feature/projects-crud` ke `main` terlebih dahulu, lalu membuat ulang branch `feature/experiences-crud` dari `main` yang sudah diperbarui.
+* Menyesuaikan komponen UI form: `RadioSelect` untuk field `category`, `CheckboxInput` untuk field `is_ongoing`.
+* Menemukan dan memperbaiki error `FieldError: Unknown field(s) (end_date, start_date) specified for Experience` yang muncul karena `ExperienceForm` sempat mendaftarkan field yang tidak ada di model `Experience` — diperbaiki dengan menyesuaikan `fields` di `ExperienceForm` menjadi `category`, `is_ongoing`, dan `image_url`.
+* Menghapus baris kode yang tidak terpakai (`projects = Project.objects.all()`) di `show_project` setelah meninjau ulang gaya penulisan context dict.
+* Menerapkan pola CRUD + ModelForm + JSON endpoint yang sama untuk `Project` (`ProjectForm`, `create_project`, `update_project`, `delete_project`, `show_json_projects`).
+* Menambahkan model `Message` beserta `MessageForm`, view `send_message`, `get_messages_json` (dengan filter `?sender=`), dan `delete_message`, sebagai fitur form kontak tambahan yang juga mendemonstrasikan JSON delivery dan deserialization.
+* Melakukan refactor seluruh template (`index.html`, `experience.html`, `project.html`, `art.html`, `message_form.html`) agar menggunakan `{% extends 'base.html' %}`, menghilangkan duplikasi header/nav/footer yang sebelumnya ada di setiap file.
+* Melakukan commit dengan pesan Conventional Commits, misalnya `feat(experience): add Experience ModelForm, CRUD views, and JSON endpoint`, lalu `git push origin main`.
+
+### Tugas 3
+
+1. Saya menggunakan `ModelForm` (seperti `ExperienceForm`, `ProjectForm`, dan `MessageForm` di `main/forms.py`) alih-alih menulis form HTML manual karena `ModelForm` langsung menurunkan field form dari definisi `Model` yang bersangkutan lewat `class Meta: model = ...`. Artinya tipe data, panjang maksimum (`max_length`), pilihan (`choices`, seperti `CATEGORY_CHOICES` pada `Experience`), dan status wajib/opsional (`blank`) sudah otomatis konsisten antara database dan form dan saya tidak perlu menulis ulang validasi tersebut secara manual di HTML maupun di view. Django juga otomatis menjalankan validasi (`form.is_valid()`) sebelum data disimpan lewat `form.save()`, sehingga risiko data yang tidak sesuai tipe/skema masuk ke database jauh berkurang dibandingkan menulis HTML form manual lalu mem-parsing `request.POST` sendiri.
+
+   Contoh konkret di project saya: pada `ExperienceForm`, field `category` otomatis menghasilkan pilihan sesuai `CATEGORY_CHOICES` di model (dirender sebagai `RadioSelect`), dan `is_ongoing` otomatis dikenali sebagai `BooleanField` (dirender sebagai `CheckboxInput`). Kalau saya menulis HTML manual, saya harus menulis ulang seluruh elemen tersebut secara manual dan menjaga sinkronisasinya setiap kali model berubah sebagaimana sempat terjadi saat saya salah mendaftarkan field `start_date`/`end_date` di `ExperienceForm` yang ternyata tidak ada di model `Experience` (lihat bagian AI Disclosure di bawah), Django langsung menolak dengan `FieldError` saat aplikasi dijalankan. Ini justru menunjukkan manfaat `ModelForm`: ketidaksesuaian antara form dan model terdeteksi otomatis di level Python, bukan baru ketahuan saat form disubmit oleh pengguna.
+
+   Untuk `{% csrf_token %}`, tag ini wajib pada setiap `<form method="POST">` (dipakai pada form Experience/Project/Message di `message_form.html`, serta pada `message_delete_modal.html`) karena melindungi dari **Cross-Site Request Forgery (CSRF)**. CSRF adalah serangan di mana situs lain mencoba mengirim request (biasanya POST) atas nama pengguna yang sedang memiliki sesi aktif di situs saya, tanpa sepengetahuan pengguna tersebut. Request POST berisiko karena POST digunakan untuk mengubah data (create/update/delete), berbeda dari GET yang seharusnya hanya membaca data. `{% csrf_token %}` menyisipkan token unik per sesi sebagai hidden input; saat form disubmit, `CsrfViewMiddleware` (terdaftar di `MIDDLEWARE` pada `settings.py`) memeriksa apakah token yang dikirim cocok dengan yang diharapkan, dan menolak request jika tidak cocok.
+
+   Sebagai catatan: pada implementasi saat ini, `delete_experience` dan `delete_project` masih dipicu lewat tautan `<a href="...">` (GET request) dengan `confirm()` JavaScript, bukan form POST, berbeda dengan `delete_message` yang sudah memakai form POST + `{% csrf_token %}` lewat `message_delete_modal.html`. Ini adalah area yang idealnya saya samakan ke depannya agar seluruh operasi hapus data terlindungi CSRF secara konsisten.
+
+2. JSON lebih disukai dibandingkan XML dalam pengembangan aplikasi web modern karena beberapa alasan konkret:
+
+   * **Struktur & pemetaan langsung ke bahasa pemrograman.** Struktur JSON (objek `{}` dan array `[]`) memetakan langsung ke struktur data native di JavaScript (object literal, array) maupun Python (`dict`, `list`), tanpa konversi tambahan. XML tidak punya konsep array bawaan — daftar item direpresentasikan lewat elemen yang diulang, yang lebih ambigu untuk diparsing otomatis.
+   * **Overhead sintaks.** XML membutuhkan tag pembuka dan penutup untuk setiap elemen, sedangkan JSON hanya membutuhkan `"key": value`. Untuk data berulang seperti daftar `Experience`/`Project` di project saya, ini membuat payload JSON jauh lebih ringkas dibanding XML untuk data yang sama.
+   * **Parsing native di JavaScript.** Browser modern menyediakan `JSON.parse()`/`JSON.stringify()` secara bawaan, sedangkan parsing XML di client membutuhkan `DOMParser` atau library tambahan yang lebih verbose.
+   * **Kompatibilitas dengan ekosistem API modern.** Django menyediakan `django.core.serializers` yang langsung mendukung `serializers.serialize("json", ...)`, dan hampir seluruh REST API modern (termasuk endpoint `show_json_experiences`, `show_json_projects`, dan `get_messages_json` pada project saya) menggunakan JSON sebagai format default.
+   * **Readability.** JSON lebih ringkas dan mudah dibaca manusia untuk struktur data bertingkat sederhana dibandingkan XML yang lebih verbose untuk struktur yang sama.
+
+   Meski begitu, JSON juga punya keterbatasan dibanding XML pada kasus tertentu: JSON tidak mendukung komentar di dalam datanya dan tidak memiliki mekanisme validasi skema resmi sekuat XML Schema (XSD)/DTD
+   
+   JSON juga kurang cocok untuk dokumen dengan campuran teks dan markup, sedangkan XML cocok untuk penggunaan itu. Untuk kebutuhan project saya yang hanya butuh mengirim data terstruktur sederhana seperti daftar `Experience`/`Project`/`Message`, JSON lebih sesuai karena datanya seragam dan tidak membutuhkan validasi skema yang ketat.
+
+3. Alur yang terjadi ketika view saya (misalnya `show_json_experiences` atau `show_json_projects`) mengembalikan data dalam format JSON adalah:
+
+   1. **Model/Database** — Data tersimpan di tabel `Experience`/`Project` pada database (SQLite untuk development, sesuai `portfolio/settings.py`).
+   2. **Queryset/Object** — View memanggil `Experience.objects.all()` atau `Project.objects.all()`, yang mengembalikan `QuerySet` berisi instance `Model` Python — bukan struktur data JSON.
+   3. **Serialization** — `QuerySet` tersebut diserialisasi lewat `serializers.serialize("json", data)`. Proses ini diperlukan karena instance `Model` Django adalah objek Python biasa (punya method, tipe field seperti `URLField`/`BooleanField`) yang tidak bisa langsung diubah menjadi teks JSON. JSON hanya mengenal tipe data primitif (string, number, boolean, array, object, null), sehingga field dan struktur objek Django harus diterjemahkan dulu ke representasi yang sesuai standar JSON.
+   4. **JSON-compatible representation** — Hasil `serializers.serialize()` adalah string berformat JSON berisi field tiap objek (`pk`, `model`, `fields: {...}`).
+   5. **HttpResponse** — String JSON dibungkus dengan `HttpResponse(..., content_type="application/json")` agar client tahu isi response berupa JSON, bukan HTML biasa.
+   6. **HTTP response → client/browser** — Response dikirim melalui HTTP ke pihak yang mengakses endpoint (misalnya browser yang membuka `/experience/json/` secara langsung).
+
+   Pada fitur pesan (`Message`), alurnya sedikit berbeda dan melibatkan **deserialization di sisi server**, bukan di client: di dalam view `send_message`, saya memanggil `get_messages_json(request)` untuk mendapatkan `HttpResponse` berisi JSON, lalu memanggil `serializers.deserialize("json", json_response.content.decode("utf-8"))` untuk mengubah JSON tersebut kembali menjadi objek Python (`DeserializedObject`), mengambil `.object` dari masing-masing hasilnya menjadi `message_list`, lalu mengirim `message_list` ke template `message_form.html` untuk ditampilkan. Ini bukan alur yang umum (biasanya deserialization terjadi di sisi client lewat `JSON.parse()` setelah `fetch`), tetapi ini adalah alur aktual yang saya implementasikan: menggunakan endpoint JSON yang sama secara internal untuk menampilkan ulang data pesan di halaman HTML.
+
+   Serialization pada dasarnya diperlukan karena ada dua "dunia" data yang berbeda: dunia objek Python/Django di server, dan dunia teks/JSON yang bisa dikirim lewat HTTP dan dipahami sistem lain (browser, aplikasi lain, dsb). Tanpa serialization, instance `Model` Django tidak bisa dikirim langsung sebagai response HTTP.
+
+## AI Disclosure
+
+### AI Tools Used
+
+| Tool | Tujuan Penggunaan | Jenis Bantuan |
+|---|---|---|
+| **Google Gemini** | Membangun fitur CRUD & JSON untuk `Experience`, debugging error Django, troubleshooting Git branch/merge, rekomendasi komponen UI form, konvensi commit message | Code generation, debugging, penjelasan konsep, saran best-practice |
+| **Claude (Anthropic)** | Audit struktur proyek Tugas 2 terhadap requirement (model, view, template, tes, migration), saran refactor `base.html`, penyusunan draf README Tugas 3 ini (deskripsi, fitur, setup, progress, dan bagian AI disclosure ini sendiri) | Code review/audit, saran refactor, drafting dokumentasi |
+
+### AI Usage & Prompting Strategy
+
+Google Gemini digunakan secara bertahap mengikuti alur pengembangan fitur: meminta kerangka kode (model, form, view, url, template) untuk `Experience`, lalu menempelkan traceback error secara langsung ketika terjadi `FieldError` untuk didiagnosis, menanyakan perbandingan gaya penulisan kode untuk mendapatkan masukan best-practice, dan menanyakan konvensi commit message. Percakapan lengkap dapat dilihat pada log:
+
+`https://share.gemini.google/KLI2UyPFyPHp`
+
+Claude digunakan dengan strategi berbeda: bukan untuk generate fitur baru dari nol, melainkan untuk **meninjau kode yang sudah ada** (memberikan `models.py`, `views.py`, `forms.py`, `urls.py`, template, dan hasil migrasi) dan meminta audit kepatuhan terhadap requirement tugas, identifikasi bug/duplikasi kode, serta penyusunan dokumentasi.
+
+### Parts Assisted by AI
+
+| Bagian | AI digunakan untuk | Peran AI | Verifikasi/Perbaikan Manual |
+|---|---|---|---|
+| Experience CRUD (model/form/view/url/template) | Membuat kerangka `ModelForm`, view CRUD, routing, dan template untuk fitur Experience | AI-generated suggestion (Gemini) | Menjalankan `runserver`, mengetes create/edit/delete, memperbaiki `FieldError` akibat field `start_date`/`end_date` yang tidak sesuai model, menyesuaikan `fields` di `ExperienceForm` menjadi `category`, `is_ongoing`, `image_url` |
+| Pemilihan widget form (`category`, `is_ongoing`) | Meminta rekomendasi UI (radio button/dropdown/checkbox) | AI explanation + suggestion (Gemini) | Menerapkan `RadioSelect` untuk `category` dan `CheckboxInput` untuk `is_ongoing`, disesuaikan dengan field final di model |
+| Debugging Git branch/merge | Menjelaskan penyebab progress "hilang" akibat branch belum di-merge | AI explanation (Gemini) | Menjalankan `git branch`, `git merge feature/projects-crud`, membuat ulang branch `feature/experiences-crud` dari `main` yang sudah diperbarui |
+| Konsistensi context dict di views | Membandingkan dua gaya penulisan context (`show_experience` vs `show_project`) dan mendeteksi dead code | AI-assisted review (Gemini) | Menghapus variabel `projects = Project.objects.all()` yang tidak terpakai di `show_project` |
+| Konvensi commit message | Menyarankan pesan Conventional Commits untuk fitur Experience | AI suggestion (Gemini) | Menjalankan `git commit -m "feat(experience): ..."` |
+| Refactor `base.html` (template inheritance) | Audit struktur proyek Tugas 2 dan menyarankan ekstraksi header/nav/footer ke `base.html` dengan `{% block %}` | AI-generated suggestion (Claude) | Mengadaptasi `base.html` ke dalam proyek; menyesuaikan seluruh template (`index.html`, `experience.html`, `project.html`, `art.html`, `message_form.html`) agar menggunakan `{% extends 'base.html' %}` |
+| Draf dokumentasi README Tugas 3 | Menyusun struktur README, jawaban pertanyaan reflektif, dan bagian AI disclosure ini berdasarkan kode dan log yang sudah ada | AI-assisted documentation (Claude) | Meninjau ulang draf agar sesuai implementasi aktual sebelum disimpan ke repository |
+
+### Critical Reflection on AI Limitations
+
+* **Gemini sempat mengasumsikan struktur model yang salah.** Pada awal pengembangan `ExperienceForm`, Gemini menyarankan field `start_date` dan `end_date` yang ternyata tidak ada pada model `Experience` yang sudah saya definisikan sebelumnya (yang memakai `category` dan `is_ongoing`). Ini menyebabkan `FieldError` nyata saat `runserver` dijalankan — bukti bahwa AI dapat memberikan kode yang secara sintaks benar tetapi tidak cocok dengan struktur project yang sebenarnya, terutama jika konteks model belum sepenuhnya diberikan dalam percakapan.
+* **Claude hanya dapat mengaudit berdasarkan file yang benar-benar dibagikan.** Saat pertama meminta audit Tugas 2, saya belum melampirkan `models.py`, `views.py`, dan migration, sehingga sebagian besar item checklist ditandai "cannot determine" alih-alih diverifikasi. Ini menunjukkan bahwa kualitas audit AI dibatasi oleh konteks yang diberikan, bukan oleh kondisi kode yang sebenarnya.
+* **AI tidak menggantikan pengujian langsung.** Baik Gemini maupun Claude tidak benar-benar menjalankan kode saya — semua perbaikan (misalnya perbaikan `FieldError`, hasil merge branch, atau kebenaran refactor `base.html`) tetap perlu saya verifikasi sendiri lewat `runserver`, browser, dan `git log`.
+
+### Manual Improvements & Verification
+
+* Memperbaiki `ExperienceForm.Meta.fields` agar sesuai model asli (`category`, `is_ongoing`, `image_url`), bukan `start_date`/`end_date` yang disarankan AI di awal.
+* Menghapus baris `projects = Project.objects.all()` yang tidak terpakai di `show_project` setelah tinjauan gaya kode.
+* Menyelesaikan masalah branch/merge secara manual: `git branch`, `git merge feature/projects-crud`, membuat ulang `feature/experiences-crud` dari `main` yang sudah diperbarui.
+* Mengadaptasi `base.html` hasil audit Claude ke dalam proyek nyata, lalu mengubah `index.html`, `experience.html`, `project.html`, `art.html`, dan `message_form.html` menjadi `{% extends 'base.html' %}`.
+* Menjalankan `python manage.py runserver` dan menguji create/edit/delete untuk Experience dan Project, serta endpoint `/experience/json/` dan `/projects/json/` secara langsung di browser.
+
+### AI Prompting Log
+
+| Tahap | Tujuan | AI Tool | Ringkasan Prompt | Hasil & Tindakan Manual |
+|---|---|---|---|---|
+| 1 | Membangun fitur CRUD & JSON Experience di branch baru | Gemini | "Lanjut bikin fitur CRUD & JSON untuk Experience di branch feature/experiences-crud" | Mendapat kerangka model/form/view/url/template; diadaptasi & diuji |
+| 2 | Debugging branch/merge | Gemini | "eh kok progress ku kayak hilang gitu ya" + output `git branch` | Memahami penyebab (branch belum di-merge), menjalankan merge & membuat ulang branch |
+| 3 | Menentukan komponen UI form | Gemini | Menanyakan radio button vs dropdown untuk `category`, dan radio vs checkbox untuk `is_ongoing` | Menerapkan `RadioSelect` dan `CheckboxInput` sesuai rekomendasi |
+| 4 | Review code style | Gemini | Membandingkan dua gaya penulisan context dict di `show_experience` vs `show_project` | Menghapus dead code di `show_project` |
+| 5 | Penempatan tombol Tambah/Edit/Hapus di template | Gemini | Menanyakan posisi tombol yang tepat pada `experience.html` | Menata tombol create di luar loop, tombol edit/delete di dalam setiap card |
+| 6 | Debugging error saat `runserver` | Gemini | Menempelkan traceback `FieldError: Unknown field(s) (end_date, start_date)` | Memperbaiki `ExperienceForm.Meta.fields` agar sesuai model asli |
+| 7 | Commit message | Gemini | "commit message nya apa ya" | Menjalankan `git commit -m "feat(experience): ..."` |
+| 8 | Push ke Git | Gemini | "cara masukin semua progress tadi ke git" | Menjalankan `git add`, `git commit`, `git checkout main`, `git merge`, `git push` |
