@@ -15,7 +15,10 @@ from main.views import (
     send_message,
     get_messages_json,
     delete_message,
-    show_json_projects)
+    show_json_projects,
+    register,
+    login_user,
+    logout_user,)
 app_name = 'main'
 
 urlpatterns = [
@@ -35,4 +38,7 @@ urlpatterns = [
     path('experience/edit/<int:id>/', update_experience, name='update_experience'),
     path('experience/delete/<int:id>/', delete_experience, name='delete_experience'),
     path('experience/json/', show_json_experiences, name='show_json_experiences'),
+    path("register/", register, name="register"),
+    path("login/", login_user, name="login"),
+    path("logout/", logout_user, name="logout"),
 ]

@@ -1,11 +1,14 @@
 from django.shortcuts import render, redirect
+from main.models import Message
 from .models import Experience, Education, Project, ArtItem
-from django.contrib import messages
 from .forms import MessageForm, ProjectForm, ExperienceForm
 from django.http import HttpResponse
 from django.core import serializers
-from main.models import Message
+from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect, render
 
 def show_main(request):
     context = {
@@ -25,9 +28,9 @@ def show_experience(request):
     return render(request, "experience.html", context)
 
 def create_experience(request):
-    form = ExperienceForm(request.POST or None)
+    form = ExperienceForm(request.GET or None)
 
-    if form.is_valid() and request.method == "POST":
+    if form.is_valid() and request.method == "GET":
         form.save()
         return redirect('main:show_experience')
         
@@ -37,9 +40,9 @@ def create_experience(request):
 def update_experience(request, id):
     experience = get_object_or_404(Experience, pk=id)
     
-    form = ExperienceForm(request.POST or None, instance=experience)
+    form = ExperienceForm(request.GET or None, instance=experience)
     
-    if form.is_valid() and request.method == "POST":
+    if form.is_valid() and request.method == "GET":
         form.save()
         return redirect('main:show_experience')
         
@@ -63,8 +66,8 @@ def show_project(request):
     return render(request, "project.html", context)
 
 def create_project(request):
-    form = ProjectForm(request.POST or None)
-    if form.is_valid() and request.method == "POST":
+    form = ProjectForm(request.GET or None)
+    if form.is_valid() and request.method == "GET":
         form.save()
         return redirect('main:show_project')
     
@@ -73,9 +76,9 @@ def create_project(request):
 
 def update_project(request, id):
     project = get_object_or_404(Project, pk=id)
-    form = ProjectForm(request.POST or None, instance=project)
+    form = ProjectForm(request.GET or None, instance=project)
     
-    if form.is_valid() and request.method == "POST":
+    if form.is_valid() and request.method == "GET":
         form.save()
         return redirect('main:show_project')
         
@@ -104,9 +107,9 @@ def show_art(request):
 
 # Message
 def send_message(request):
-    form = MessageForm(request.POST or None)
+    form = MessageForm(request.GET or None)
     
-    if request.method == "POST" and form.is_valid():
+    if request.method == "GET" and form.is_valid():
         form.save() 
         messages.success(request, "Terima kasih! Pesanmu sudah terkirim.")
         return redirect("main:send_message") 
@@ -138,8 +141,39 @@ def get_messages_json(request):
 
 def delete_message(request, message_id):
     message_item = get_object_or_404(Message, pk=message_id)
-    if request.method == "POST":
+    if request.method == "GET":
         message_item.delete()
         messages.success(request, "Pesan berhasil dihapus!")
         return redirect("main:send_message")
     return redirect("main:send_message")
+
+def register(request):
+    form = UserCreationForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Akun berhasil dibuat. Silakan login.")
+        return redirect("main:login")
+
+    context = {
+        "name": "Yacchem",
+        "form": form,
+    }
+    return render(request, "register.html", context)
+
+def login_user(request):
+    form = AuthenticationForm(request, data=request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        login(request, form.get_user())
+        return redirect("main:show_main")
+
+    context = {
+        "name": "Yacchem",
+        "form": form,
+    }
+    return render(request, "login.html", context)
+
+def logout_user(request):
+    logout(request)
+    return redirect("main:show_main")
