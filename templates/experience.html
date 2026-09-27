@@ -40,34 +40,37 @@
         </div>
 
         <div class="experience-list">
-            {% for exp in experience_list %}
+            {% for experience in experience_list %}
             <article class="card experience-card">
-                {% if exp.image_url %}
-                <img src="{{ exp.image_url }}" alt="{{ exp.organization }} Logo" class="exp-icon">
+                {# Diubah dari exp menjadi experience #}
+                {% if experience.image_url %}
+                <img src="{{ experience.image_url }}" alt="{{ experience.organization }} Logo" class="exp-icon">
                 {% endif %}
                 <div class="exp-details">
-                    <h3 class="org-title">{{ exp.organization }}</h3>
+                    <h3 class="org-title">{{ experience.organization }}</h3>
                     <div class="role-list">
                         <div class="role-item">
-                            <h4>{{ exp.title }}</h4>
-                            <p class="experience-description">{{ exp.description }}</p>
-                            {% if exp.is_ongoing %}
+                            <h4>{{ experience.title }}</h4>
+                            <p class="experience-description">{{ experience.description }}</p>
+                            {% if experience.is_ongoing %}
                             <p class="role-period">Sedang Berlangsung</p>
                             {% else %}
                             <p class="role-period">Selesai</p>
                             {% endif %}
 
+                            {% include "components/experience_star.html" with experience=experience %}
+
                             <div class="card-actions"
-                                style="margin-top: 15px; display: flex; gap: 8px; align-items: center;">
+                                style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
                                 {% if user.is_superuser or is_editor %}
-                                <a href="{% url 'main:update_experience' experience.id %}" class="btn-edit">Edit</a>
+                                <a href="{% url 'main:update_experience' experience.id %}" class="btn-action btn-edit">Edit</a>
                                 {% endif %}
                                 {% if user.is_superuser %}
-                                <a href="{% url 'main:delete_experience' exp.id %}" class="btn-action btn-delete"
+                                {# Diubah dari exp.id menjadi experience.id #}
+                                <a href="{% url 'main:delete_experience' experience.id %}" class="btn-action btn-delete"
                                     onclick="return confirm('Apakah kamu yakin ingin menghapus data ini?')">Delete</a>
                                 {% endif %}
                             </div>
-
                         </div>
                     </div>
                 </div>
