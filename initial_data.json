@@ -12,6 +12,7 @@
   },
   {
     "model": "main.project",
+    "pk" : "11111111-2222-3333-4444-555555555555",
     "fields": {
       "title": "Save the Patient!",
       "description": "A survival game about a doctor enduring a nonstop three-day shift while trying to save patients and stay awake.",

@@ -782,3 +782,25 @@ h1, .brand {
         justify-content: flex-start;
     }
 }
+
+.star-form {
+    display: inline;
+}
+
+.button-star {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--accent-dark);
+}
+
+.button-star.is-starred {
+    background: var(--accent);
+}
+
+.star-count {
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(186, 67, 163, 0.25);
+    font-size: 0.8rem;
+}

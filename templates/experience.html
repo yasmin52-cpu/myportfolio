@@ -34,7 +34,9 @@
         <h2 class="section-badge">Experiences</h2>
 
         <div class="action-header" style="margin-bottom: 20px;">
-            <a href="{% url 'main:create_experience' %}" class="btn-primary">+ Tambah Experience Baru</a>
+            {% if user.is_superuser %}
+            <a href="{% url 'main:create_experience' %}" class="btn-primary">+ Add Experience</a>
+            {% endif %}
         </div>
 
         <div class="experience-list">
@@ -55,9 +57,15 @@
                             <p class="role-period">Selesai</p>
                             {% endif %}
 
-                            <div class="card-actions" style="margin-top: 15px; display: flex; gap: 8px; align-items: center;">
-                                <a href="{% url 'main:update_experience' exp.id %}" class="btn-action btn-edit">Edit</a>
-                                <a href="{% url 'main:delete_experience' exp.id %}" class="btn-action btn-delete" onclick="return confirm('Apakah kamu yakin ingin menghapus data ini?')">Delete</a>
+                            <div class="card-actions"
+                                style="margin-top: 15px; display: flex; gap: 8px; align-items: center;">
+                                {% if user.is_superuser or is_editor %}
+                                <a href="{% url 'main:update_experience' experience.id %}" class="btn-edit">Edit</a>
+                                {% endif %}
+                                {% if user.is_superuser %}
+                                <a href="{% url 'main:delete_experience' exp.id %}" class="btn-action btn-delete"
+                                    onclick="return confirm('Apakah kamu yakin ingin menghapus data ini?')">Delete</a>
+                                {% endif %}
                             </div>
 
                         </div>
