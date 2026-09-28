@@ -493,3 +493,72 @@ Claude digunakan dengan strategi berbeda: bukan untuk generate fitur baru dari n
 | 6 | Debugging error saat `runserver` | Gemini | Menempelkan traceback `FieldError: Unknown field(s) (end_date, start_date)` | Memperbaiki `ExperienceForm.Meta.fields` agar sesuai model asli |
 | 7 | Commit message | Gemini | "commit message nya apa ya" | Menjalankan `git commit -m "feat(experience): ..."` |
 | 8 | Push ke Git | Gemini | "cara masukin semua progress tadi ke git" | Menjalankan `git add`, `git commit`, `git checkout main`, `git merge`, `git push` |
+
+## AI Disclosure — Individual Assignment 4
+
+### AI Tools Used
+
+| Tool | Tujuan Penggunaan | Jenis Bantuan |
+| --- | --- | --- |
+| **Gemini Pro 3.1** | Grup Editor lewat migration, kebocoran username di JSON, tombol Edit untuk Editor di halaman Project, `delete_message`, star hanya lewat POST, redirect `next` setelah login, dan commit message | Code generation, explanation, debugging ringan |
+
+### AI Usage & Prompting Strategy
+
+Di beberapa prompt pertama, poin audit langsung diberikan ke Gemini Pro 3.1 apa adanya (misalnya "Editor group doesn't exist. Why: ... PASS: ...") tanpa melampirkan kode saya. Akibatnya jawaban yang keluar generik dan memakai nama fungsi/URL yang tidak sama dengan proyek saya (lihat bagian keterbatasan). Baru setelah itu saya menempelkan fungsi aslinya (`show_json_experiences`) dan jawabannya menjadi lebih sesuai. Untuk mengecek hasilnya, saya menjalankan `python manage.py runserver` lalu memanggil `/experience/json/` dengan `curl` dan menempelkan outputnya kembali ke AI.
+
+### Parts Assisted by AI
+
+| Bagian IA4 | AI Tool | Bentuk Bantuan | Kontribusi Manual Saya |
+| --- | --- | --- | --- |
+| Grup Editor otomatis dibuat | Gemini Pro | data migration `RunPython` dengan `get_or_create` | Membuat file data migration (misal `0003_auto_add_editor_group.py`), menjalankan `migrate`, dan memastikan grup muncul di Django Admin. |
+| Kebocoran username di JSON | Gemini Pro | Contoh `JsonResponse` yang mengirim jumlah star dan status "sudah di-star" | Menempelkan fungsi asli agar jawaban sesuai; menambahkan kembali field IA3 yang hilang dari dictionary; memastikan URL `/projects/json/` dan `/experience/json/` tidak membocorkan ID atau username. |
+| Tombol Edit Editor di Project | Gemini Pro | Contoh view + template dengan `is_admin or is_editor` | Menyesuaikan nama variabel context (`project_list` / `experience_list`) dan memperbaiki penamaan CSS class menjadi `btn-action btn-edit` agar sejajar dengan tombol delete. |
+| Restriksi `delete_message`, star hanya POST, redirect `next` | Gemini Pro | Contoh decorator dan template | Mengganti redirect login dari AI menjadi response `403 Forbidden` (`PermissionDenied`) sesuai spesifikasi tugas; memastikan tag `<form>` dipakai untuk star. |
+| Commit message | Gemini Pro | Menyusun pesan commit | Memodifikasi pesan commit AI agar lebih akurat merepresentasikan perbaikan database PWS dan UUID yang memakan banyak waktu. |
+
+Bagian lain di TI4 (register/login/logout, cookie `last_login`, pengecekan role di view, model/migrasi/view star) saya kerjakan dengan mengikuti **Tutorial 04**, dikembangkan dari Tugas 3 saya, dan dibantu AI saat terjadi *error* (seperti `NoReverseMatch` dan masalah *database schema* di PWS).
+
+### Critical Reflection on AI Limitations
+
+Contoh-contoh ini saya temukan saat membandingkan saran AI dengan kode proyek saya:
+
+* **Kode generik yang tidak cocok dengan proyek.** Karena kode belum saya lampirkan, saran AI memakai nama yang tidak ada di proyek saya: fungsi `get_experience_json` (yang ada `show_json_experiences`), context `projects` (yang ada `project_list`), URL `add_project`/`edit_project` tanpa namespace (yang ada `main:create_project`/`main:update_project`), `delete_message(request, id)` (URL saya memakai `message_id`), `redirect('message_list')` dan `redirect('home')` (yang ada `main:send_message` dan `main:show_main`), serta modal Bootstrap `data-bs-toggle` padahal modal saya memakai atribut `popover` bawaan HTML. Kalau ditempel langsung, kode ini akan error. Saya secara manual menyesuaikan seluruh tag `{% url %}`, variabel dalam *loop* (mengganti `exp` menjadi `experience`), dan memastikan modal memakai atribut HTML native bawaan proyek saya.
+* **Asumsi field yang tidak ada.** Salah satu opsi JSON memakai field `date_created`, padahal model `Experience` saya tidak punya field itu.
+* **Saran yang bertentangan dengan requirement.** `user_passes_test` untuk `delete_message` mengalihkan user yang tidak berhak ke halaman login, padahal spesifikasi minta 403 untuk user yang sudah login. Dan `LOGIN_URL` di settings saya tidak diatur. Saran redirect `next` tidak memvalidasi URL (risiko open redirect).
+* **AI tidak tahu keadaan database dan riwayat migrasi saya.** Saran `migrate --fake` untuk PostgreSQL PWS cukup berisiko, karena menandai migrasi sebagai sudah dijalankan tanpa benar-benar membuat tabel. Saya akhirnya menggunakan `manage.py shell` dengan `connection.cursor()` untuk melakukan `DROP TABLE` secara aman dan mengulang migrasi dari nol di PWS.
+* **Commit message tanpa melihat perubahan.** Pesan commit dari AI hanya menyebut 4 hal keamanan, padahal perbaikan saya melibatkan perombakan tipe data UUID dan integer yang sangat memakan waktu.
+
+Dari sini saya belajar bahwa AI memberi hasil yang jauh lebih cocok kalau saya melampirkan kode dan requirement, dan bahwa jawabannya tetap harus dibandingkan dengan spesifikasi tugas (403 vs redirect, POST vs GET).
+
+### Manual Improvements & Verification
+
+| Saran AI | Masalah / Pertimbangan | Perubahan Manual Saya | Hasil Akhir |
+| --- | --- | --- | --- |
+| Contoh JSON generik + kode JS frontend | Nama fungsi tidak cocok, dan proyek tidak memakai JS untuk star | Menempelkan fungsi asli lalu memakai versi `JsonResponse` (Opsi 1 dari AI) dan menyesuaikan field manual. | `starred_by` hilang dari `/experience/json/` dan `/projects/json/`. Data aman. |
+| `is_admin or is_editor` di template Project | Nama URL dan variabel context tidak sesuai proyek | Memperbaiki variabel dari `projects` ke `project_list`. Memperbaiki `exp` menjadi `experience` di file HTML. Menambah class `btn-action btn-edit` agar UI rapi. | Tombol Edit muncul eksklusif untuk Admin dan Editor tanpa merusak layout CSS. |
+| `user_passes_test` untuk `delete_message` | Redirect ke login, bukan 403 Forbidden | Mengganti *decorator* dengan *server-side check* manual: `if not request.user.is_superuser: raise PermissionDenied`. | Menghasilkan error 403 jika diakses secara paksa oleh user non-admin. |
+| Redirect `next` tanpa validasi | Risiko open redirect | Memastikan validasi URL menggunakan `url_has_allowed_host_and_scheme` dari modul utilitas Django sebelum melakukan redirect. | Redirect setelah login aman. |
+| `migrate --fake` untuk produksi | Tidak sesuai kondisi database saya, tabel fisik PostgreSQL belum ada | Membuka shell di PWS, mengeksekusi sintaks `DROP TABLE IF EXISTS ... CASCADE;` lalu `migrate` ulang dan `loaddata`. | Database produksi PWS tersinkronisasi bersih tanpa konflik UUID/Integer. |
+
+**Yang sudah saya verifikasi sendiri:**
+
+* Menjalankan `python manage.py runserver`. Percobaan `curl` pertama gagal karena server belum menyala; setelah server dijalankan, `curl http://localhost:8000/experience/json/` mengembalikan status 200 tanpa daftar username.
+* Melakukan login/logout dan memeriksa cookie `last_login` berhasil ter-set.
+* Mengakses sebagai *anonymous*, normal user, Editor, dan superuser ke URL *create*, *update*, dan *delete* secara manual melalui *address bar*; memastikan yang tak berhak mendapat 403 Forbidden atau redirect ke login.
+* Memastikan toggle star berfungsi, menolak request dengan method GET, dan meredirect kembali ke halaman asal.
+* Mengeksekusi `python manage.py migrate` di database lokal (SQLite) maupun di PWS (PostgreSQL) setelah masalah tipe data UUID terselesaikan.
+* Menambahkan akun user biasa ke dalam grup `Editor` lewat Django Admin dan memvalidasi tombol Edit muncul untuk user tersebut.
+
+### AI Prompting Log
+
+| No. | Prompt / Masalah | Solusi dari AI (Gemini Pro) | Keterangan / Tindakan Saya |
+| --- | --- | --- | --- |
+| 1 | Mengubah tipe data menjadi UUID namun muncul error `NoReverseMatch`. | Menyarankan ubah `<int:id>` ke `<uuid:id>` di `urls.py`, hapus `db.sqlite3` lokal, dan ulang migrasi. | Diterapkan di *local development*. Error URL teratasi. |
+| 2 | Tampilan admin hancur/overflow karena tombol bertambah banyak. | Menyarankan tambah properti CSS `flex-wrap: wrap;` pada `card-actions`. | Diterapkan, tampilan UI tombol menjadi *hugged* ke bawah. |
+| 3 | `NoReverseMatch` untuk URL `show_projects` saat mencoba memberi star. | Mengingatkan bahwa nama URL saya bentuk tunggal (`show_project`). | Diperbaiki manual di `views.py`. |
+| 4 | JSON membocorkan angka ID (user yang memberi star). | Menyuruh menambahkan argumen `use_natural_foreign_keys=True` pada `serializers.serialize()`. | Diterapkan, JSON menampilkan username. (Nanti diubah lagi karena username juga tidak boleh bocor publik). |
+| 5 | Minta step-by-step pengerjaan IA4. | Memberi panduan panjang (buat Grup Editor, tambah field relasi star, restrict create/delete, buat toggle star POST). | Dijadikan acuan utama pengerjaan IA4. |
+| 6 | Error `NoReverseMatch` dengan argumen `('',)` di halaman experience. | Menyadari ada variabel *looping* yang dipanggil salah (`exp` padahal dideklarasikan `experience`). | Disesuaikan agar semua memakai variabel `experience`. |
+| 7 | Tampilan UI tombol Edit berbeda dengan tombol Delete. | Menyuruh menambahkan class `btn-action` berdampingan dengan `btn-edit`. | Diterapkan agar desain seragam (bentuk pil). |
+| 8 | Bentrok *primary key* saat `loaddata` di PWS. PostgreSQL menolak UUID masuk ke integer. | Menyarankan hapus skema tabel paksa lewat Django Shell (`DROP TABLE`), hapus `django_migrations`, dan ulangi migrasi dari awal. | Panduan ini sangat krusial dan menyelesaikan isu deployment di PWS. |
+| 9 | Mem-paste kriteria lulus (PASS) dari asisten dosen (Group, Leak, UI Editor, Delete auth, dll). | AI memberi contoh kode penambalan keamanan (JsonResponse tanpa array username, decorator check, next redirect). | Banyak *adjustment* manual karena AI menebak nama variabel/fungsi yang tidak sesuai dengan struktur proyek saya. |
