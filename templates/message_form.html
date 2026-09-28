@@ -35,7 +35,11 @@
                 <div style="background: white; padding: 1.25rem; border-radius: var(--radius); margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(227, 101, 193, 0.15);">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                         <strong style="color: var(--accent-dark);">{{ msg.sender }}</strong>
-                        {% include "message_delete_modal.html" with msg=msg %}
+                        
+                        {% if user.is_superuser %}
+                            {% include "message_delete_modal.html" with msg=msg %}
+                        {% endif %}
+                        
                     </div>
                     <p style="color: var(--ink); font-size: 0.95rem;">{{ msg.content }}</p>
                     <small style="color: var(--accent); font-size: 0.75rem;">{{ msg.time_sent }}</small>

@@ -3,15 +3,15 @@ from django.shortcuts import render, redirect
 from main.models import Message
 from .models import Experience, Education, Project, ArtItem
 from .forms import MessageForm, ProjectForm, ExperienceForm
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.core import serializers
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import get_object_or_404
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 def show_main(request):
     last_login = request.COOKIES.get('last_login', 'Belum ada sesi login / Cookie tidak ditemukan')
@@ -69,6 +69,7 @@ def update_experience(request, id):
     return render(request, 'message_form.html', context)
 
 @login_required(login_url="/login/")
+@require_POST
 def delete_experience(request, id):
     if not request.user.is_superuser:
         raise PermissionDenied
@@ -78,11 +79,20 @@ def delete_experience(request, id):
     return redirect('main:show_experience')
 
 def show_json_experiences(request):
-    data = Experience.objects.all()
-    return HttpResponse(
-        serializers.serialize("json", data, use_natural_foreign_keys=True), 
-        content_type="application/json"
-    )
+    experiences = Experience.objects.all()
+    data = []
+    
+    for exp in experiences:
+        data.append({
+            'pk': exp.id,
+            'fields': {
+                'title': exp.title,
+                'stars_count': exp.starred_by.count(),
+                'has_starred': request.user.is_authenticated and exp.starred_by.filter(id=request.user.id).exists(),
+            }
+        })
+        
+    return JsonResponse(data, safe=False)
     
 @login_required(login_url="/login/")
 def toggle_star_experience(request, id):
@@ -96,10 +106,21 @@ def toggle_star_experience(request, id):
 
 # Projects
 def show_project(request):
+    projects = Project.objects.all()
+    
+    is_admin = request.user.is_superuser
+    is_editor = False
+    
+    if request.user.is_authenticated:
+        is_editor = request.user.groups.filter(name='Editor').exists()
+
     context = {
-        'project_list': Project.objects.all(),
+        'projects': projects,
+        'is_admin': is_admin,
+        'is_editor': is_editor,
     }
-    return render(request, "project.html", context)
+    
+    return render(request, 'project.html', context)
 
 @login_required(login_url="/login/")
 def create_project(request):
@@ -113,7 +134,13 @@ def create_project(request):
     context = {'form': form, 'title': 'Add New Project'}
     return render(request, 'message_form.html', context)
 
+@login_required(login_url='/login/')
 def update_project(request, id):
+    is_editor = request.user.groups.filter(name='Editor').exists()
+    
+    if not (request.user.is_superuser or is_editor):
+        raise PermissionDenied
+        
     project = get_object_or_404(Project, pk=id)
     form = ProjectForm(request.POST or None, instance=project)
     
@@ -124,6 +151,8 @@ def update_project(request, id):
     context = {'form': form, 'title': 'Edit Project'}
     return render(request, 'message_form.html', context)
 
+@login_required(login_url='/login/')
+@require_POST
 def delete_project(request, id):
     if not request.user.is_superuser:
         raise PermissionDenied
@@ -195,12 +224,18 @@ def get_messages_json(request):
     return HttpResponse(messages_json, content_type="application/json")
 
 
+@login_required(login_url='/login/')
 def delete_message(request, message_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     message_item = get_object_or_404(Message, pk=message_id)
+    
     if request.method == "POST":
         message_item.delete()
         messages.success(request, "Pesan berhasil dihapus!")
         return redirect("main:send_message")
+        
     return redirect("main:send_message")
 
 def register(request):

@@ -42,7 +42,6 @@
         <div class="experience-list">
             {% for experience in experience_list %}
             <article class="card experience-card">
-                {# Diubah dari exp menjadi experience #}
                 {% if experience.image_url %}
                 <img src="{{ experience.image_url }}" alt="{{ experience.organization }} Logo" class="exp-icon">
                 {% endif %}
@@ -63,12 +62,17 @@
                             <div class="card-actions"
                                 style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
                                 {% if user.is_superuser or is_editor %}
-                                <a href="{% url 'main:update_experience' experience.id %}" class="btn-action btn-edit">Edit</a>
+                                <a href="{% url 'main:update_experience' experience.id %}"
+                                    class="btn-action btn-edit">Edit</a>
                                 {% endif %}
                                 {% if user.is_superuser %}
-                                {# Diubah dari exp.id menjadi experience.id #}
-                                <a href="{% url 'main:delete_experience' experience.id %}" class="btn-action btn-delete"
-                                    onclick="return confirm('Apakah kamu yakin ingin menghapus data ini?')">Delete</a>
+                                <form action="{% url 'main:delete_experience' experience.id %}" method="POST"
+                                    style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-action btn-delete"
+                                        onclick="return confirm('Apakah kamu yakin ingin menghapus data ini?')">Delete</button>
+                                </form> onclick="return confirm('Apakah kamu yakin ingin menghapus data
+                                ini?')">Delete</a>
                                 {% endif %}
                             </div>
                         </div>
