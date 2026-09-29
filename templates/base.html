@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <link rel="stylesheet" href="/static/css/style.css">
     {% block extra_head %}{% endblock %}
 </head>
+
 <body>
     <header class="site-header">
         <div class="container">
@@ -21,15 +23,20 @@
                 <a href="{% url 'main:show_art' %}">Art Portfolio</a>
                 <a href="{% url 'main:send_message' %}">Send me a message!</a>
                 {% if user.is_authenticated %}
-                    <span class="nav-user">{{ user.username }}</span>
-                    <a href="{% url 'main:logout' %}">Logout</a>
+                <span class="nav-user">{{ user.username }}</span>
+                <a href="{% url 'main:logout' %}">Logout</a>
                 {% else %}
-                    <a href="{% url 'main:login' %}">Login</a>
-                    <a href="{% url 'main:register' %}">Register</a>
+                <a href="{% url 'main:login' %}">Login</a>
+                <a href="{% url 'main:register' %}">Register</a>
                 {% endif %}
             </nav>
         </div>
     </header>
+
+    <button class="button button-secondary"
+        onclick="showToast('Notifikasi Sistem', 'Project berhasil dimuat dengan baik!', 'success')">
+        Test Toast Notifikasi
+    </button>
 
     <main>
         {% block content %}{% endblock %}
@@ -37,8 +44,11 @@
 
     <footer class="site-footer">
         <div class="container">
-            <p>&copy; 2026 {% block footer_name %}Yasmin{% endblock %}. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
+            <p>&copy; 2026 {{ name }}. Fakultas Ilmu Komputer, Universitas Indonesia.</p>
         </div>
     </footer>
+
+    {% include 'components/toast.html' %}
 </body>
+
 </html>

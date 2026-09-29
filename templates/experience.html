@@ -39,50 +39,132 @@
             {% endif %}
         </div>
 
-        <div class="experience-list">
-            {% for experience in experience_list %}
-            <article class="card experience-card">
-                {% if experience.image_url %}
-                <img src="{{ experience.image_url }}" alt="{{ experience.organization }} Logo" class="exp-icon">
-                {% endif %}
-                <div class="exp-details">
-                    <h3 class="org-title">{{ experience.organization }}</h3>
-                    <div class="role-list">
-                        <div class="role-item">
-                            <h4>{{ experience.title }}</h4>
-                            <p class="experience-description">{{ experience.description }}</p>
-                            {% if experience.is_ongoing %}
-                            <p class="role-period">Sedang Berlangsung</p>
-                            {% else %}
-                            <p class="role-period">Selesai</p>
-                            {% endif %}
+        <!-- Loading State -->
+        <div id="loading-exp" class="empty-state hide">
+            <p>Memuat experiences...</p>
+        </div>
 
-                            {% include "components/experience_star.html" with experience=experience %}
+        <!-- Error State -->
+        <div id="error-exp" class="empty-state hide">
+            <p>Gagal memuat data experiences. Silakan coba lagi.</p>
+        </div>
 
-                            <div class="card-actions"
-                                style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                                {% if user.is_superuser or is_editor %}
-                                <a href="{% url 'main:update_experience' experience.id %}"
-                                    class="btn-action btn-edit">Edit</a>
-                                {% endif %}
-                                {% if user.is_superuser %}
-                                <form action="{% url 'main:delete_experience' experience.id %}" method="POST"
-                                    style="display: inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn-action btn-delete"
-                                        onclick="return confirm('Apakah kamu yakin ingin menghapus data ini?')">Delete</button>
-                                </form> onclick="return confirm('Apakah kamu yakin ingin menghapus data
-                                ini?')">Delete</a>
-                                {% endif %}
-                            </div>
+        <!-- Empty State -->
+        <div id="empty-exp" class="empty-state hide">
+            <p>Belum ada pengalaman yang ditambahkan.</p>
+        </div>
+
+        <!-- Wadah Grid AJAX untuk Experience -->
+        <div id="experience-grid" class="experience-list hide"></div>
+    </div>
+</section>
+
+<!-- SCRIPT AJAX -->
+<script>
+    const BASE_EXPERIENCE_ENDPOINT = "{% url 'main:show_json_experiences' %}"; 
+    const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
+    const IS_EDITOR = "{{ is_editor|yesno:'true,false' }}" === "true";
+
+    const loadingExp = document.getElementById('loading-exp');
+    const errorExp = document.getElementById('error-exp');
+    const emptyExp = document.getElementById('empty-exp');
+    const expGrid = document.getElementById('experience-grid');
+
+    function displayExpSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+        loadingExp.classList.toggle('hide', !showLoading);
+        errorExp.classList.toggle('hide', !showError);
+        emptyExp.classList.toggle('hide', !showEmpty);
+        expGrid.classList.toggle('hide', !showGrid);
+    }
+
+    function buildExperienceCard(item) {
+        const exp = item.fields;
+        const expId = item.pk;
+
+        const article = document.createElement('article');
+        article.className = 'card experience-card';
+
+        const editUrl = "{% url 'main:update_experience' 0 %}".replace('0', expId);
+        const deleteUrl = "{% url 'main:delete_experience' 0 %}".replace('0', expId);
+        const starUrl = "{% url 'main:toggle_star_experience' 0 %}".replace('0', expId);
+
+        const imgHtml = exp.image_url 
+            ? `<img src="${exp.image_url}" alt="${exp.organization} Logo" class="exp-icon">` 
+            : '';
+
+        const periodText = exp.is_ongoing ? "Sedang Berlangsung" : "Selesai";
+        
+        const isStarredClass = exp.has_starred ? " is-starred" : "";
+        const starText = exp.has_starred ? "Unstar" : "Star";
+
+        let adminHtml = '';
+        if (IS_SUPERUSER || IS_EDITOR) {
+            adminHtml += `<a href="${editUrl}" class="btn-action btn-edit">Edit</a>`;
+        }
+        if (IS_SUPERUSER) {
+            adminHtml += `
+                <form action="${deleteUrl}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-action btn-delete"
+                        onclick="return confirm('Apakah kamu yakin ingin menghapus data ini?')">Delete</button>
+                </form>
+            `;
+        }
+
+        article.innerHTML = `
+            ${imgHtml}
+            <div class="exp-details">
+                <h3 class="org-title">${exp.organization}</h3>
+                <div class="role-list">
+                    <div class="role-item">
+                        <h4>${exp.title}</h4>
+                        <p class="experience-description">${exp.description}</p>
+                        <p class="role-period">${periodText}</p>
+                        
+                        <form method="post" action="${starUrl}" class="star-form" style="margin-top: 10px;">
+                            {% csrf_token %}
+                            <button type="submit" class="button button-star${isStarredClass}">
+                                <span aria-hidden="true">★</span> ${starText} <span class="star-count">${exp.stars_count}</span>
+                            </button>
+                        </form>
+
+                        <div class="card-actions" style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                            ${adminHtml}
                         </div>
                     </div>
                 </div>
-            </article>
-            {% empty %}
-            <p class="empty-state">Belum ada pengalaman yang ditambahkan.</p>
-            {% endfor %}
-        </div>
-    </div>
-</section>
+            </div>
+        `;
+        return article;
+    }
+
+    async function fetchExperiences() {
+        try {
+            displayExpSection({ showLoading: true });
+            
+            const response = await fetch(BASE_EXPERIENCE_ENDPOINT, {
+                headers: { 'Accept': 'application/json' }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch data');
+
+            const expData = await response.json();
+
+            if (expData.length === 0) {
+                displayExpSection({ showEmpty: true });
+            } else {
+                expGrid.innerHTML = '';
+                expData.forEach(item => {
+                    expGrid.appendChild(buildExperienceCard(item));
+                });
+                displayExpSection({ showGrid: true });
+            }
+        } catch (error) {
+            console.error('Error loading experiences:', error);
+            displayExpSection({ showError: true });
+        }
+    }
+
+    fetchExperiences();
+</script>
 {% endblock %}

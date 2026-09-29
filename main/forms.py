@@ -1,5 +1,9 @@
+from django import forms
+from django.core.exceptions import ValidationError
+from django.utils.html import strip_tags
 from django.forms import ModelForm, TextInput, Textarea, URLInput, RadioSelect, CheckboxInput
 from main.models import Message, Project, Experience, ArtItem
+from .models import Project
 
 class MessageForm(ModelForm):
     class Meta:
@@ -17,12 +21,12 @@ class MessageForm(ModelForm):
 class ProjectForm(ModelForm):
     class Meta:
         model = Project
-        fields = [ "title", "description", "image_url", "play_url" ]
+        fields = ["title", "description", "image_url", "play_url"]
         labels = {
-            "title" : "Title of your project",
-            "description" : "Brief description of your project",
-            "image_url" : "Url or path to your image",
-            "play_url" : "Link to your project"
+            "title": "Title of your project",
+            "description": "Brief description of your project",
+            "image_url": "Url or path to your image",
+            "play_url": "Link to your project"
         }
         widgets = {
             "title": TextInput(attrs={"placeholder": "Masukkan judul project...", "class": "form-control"}),
@@ -30,6 +34,17 @@ class ProjectForm(ModelForm):
             "image_url": TextInput(attrs={"placeholder": "https://...", "class": "form-control"}),
             "play_url": URLInput(attrs={"placeholder": "https://...", "class": "form-control"}),
         }
+
+    def clean_title(self):
+        # Membersihkan tag HTML dari title
+        title = strip_tags(self.cleaned_data["title"]).strip()
+        if not title:
+            raise ValidationError("Nama proyek tidak boleh hanya berisi tag HTML.")
+        return title
+
+    def clean_description(self):
+        # Membersihkan tag HTML dari description
+        return strip_tags(self.cleaned_data["description"]).strip()
 
 class ExperienceForm(ModelForm):
     class Meta:

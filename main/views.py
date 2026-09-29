@@ -79,16 +79,24 @@ def delete_experience(request, id):
     return redirect('main:show_experience')
 
 def show_json_experiences(request):
-    experiences = Experience.objects.all()
+    experiences = Experience.objects.prefetch_related('starred_by').all()
     data = []
     
     for exp in experiences:
+        starred_users = exp.starred_by.all()
+        has_starred = request.user in starred_users if request.user.is_authenticated else False
+        
         data.append({
             'pk': exp.id,
             'fields': {
                 'title': exp.title,
-                'stars_count': exp.starred_by.count(),
-                'has_starred': request.user.is_authenticated and exp.starred_by.filter(id=request.user.id).exists(),
+                'organization': exp.organization,
+                'description': exp.description,
+                'category': exp.category,
+                'is_ongoing': exp.is_ongoing,
+                'image_url': exp.image_url,
+                'stars_count': starred_users.count(),
+                'has_starred': has_starred,
             }
         })
         
@@ -106,7 +114,7 @@ def toggle_star_experience(request, id):
 
 # Projects
 def show_project(request):
-    projects = Project.objects.all()
+    title_query = request.GET.get("title", "").strip()
     
     is_admin = request.user.is_superuser
     is_editor = False
@@ -115,9 +123,10 @@ def show_project(request):
         is_editor = request.user.groups.filter(name='Editor').exists()
 
     context = {
-        'projects': projects,
+        'title_query': title_query,
         'is_admin': is_admin,
         'is_editor': is_editor,
+        'form': ProjectForm(), 
     }
     
     return render(request, 'project.html', context)
@@ -161,11 +170,35 @@ def delete_project(request, id):
     return redirect('main:show_project')
 
 def show_json_projects(request):
-    data = Project.objects.all()
-    return HttpResponse(
-        serializers.serialize("json", data, use_natural_foreign_keys=True), 
-        content_type="application/json"
-    )
+    title_query = request.GET.get("title", "").strip()
+    
+    projects = Project.objects.prefetch_related('starred_by').all()
+
+    if title_query:
+        projects = projects.filter(title__icontains=title_query)
+
+    data = []
+    for project in projects:
+        starred_users = project.starred_by.all()
+        
+        is_starred = request.user in starred_users if request.user.is_authenticated else False
+        starred_by_names = ", ".join([u.username for u in starred_users])
+
+        data.append({
+            "pk": str(project.id),
+            "fields": {
+                "title": project.title,
+                "description": project.description,
+                "image_url": project.image_url,
+                "play_url": project.play_url,
+                
+                "star_count": starred_users.count(),
+                "is_starred": is_starred,
+                "starred_by_names": starred_by_names,
+            }
+        })
+
+    return JsonResponse(data, safe=False)
     
 @login_required(login_url="/login/")
 def toggle_star_projects(request, project_id):
@@ -178,6 +211,27 @@ def toggle_star_projects(request, project_id):
             project.starred_by.add(request.user)
 
     return redirect("main:show_project")
+
+@require_POST
+def create_project_ajax(request):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Hanya pemilik portofolio yang dapat menambahkan proyek."},
+            status=403,
+        )
+    
+    # Form divalidasi menggunakan form yang sudah ada
+    form = ProjectForm(request.POST)
+    
+    if form.is_valid():
+        project = form.save()
+        return JsonResponse(
+            # Ubah project.id yang bertipe UUID menjadi string
+            {"message": "Proyek berhasil ditambahkan.", "pk": str(project.id)},
+            status=201,
+        )
+        
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
 
 # Art Stuff
 def show_art(request):

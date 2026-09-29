@@ -508,7 +508,7 @@ Di beberapa prompt pertama, poin audit langsung diberikan ke Gemini Pro 3.1 apa 
 
 ### Parts Assisted by AI
 
-| Bagian IA4 | AI Tool | Bentuk Bantuan | Kontribusi Manual Saya |
+| Bagian TI4 | AI Tool | Bentuk Bantuan | Kontribusi Manual Saya |
 | --- | --- | --- | --- |
 | Grup Editor otomatis dibuat | Gemini Pro | data migration `RunPython` dengan `get_or_create` | Membuat file data migration (misal `0003_auto_add_editor_group.py`), menjalankan `migrate`, dan memastikan grup muncul di Django Admin. |
 | Kebocoran username di JSON | Gemini Pro | Contoh `JsonResponse` yang mengirim jumlah star dan status "sudah di-star" | Menempelkan fungsi asli agar jawaban sesuai; menambahkan kembali field IA3 yang hilang dari dictionary; memastikan URL `/projects/json/` dan `/experience/json/` tidak membocorkan ID atau username. |
@@ -557,7 +557,7 @@ Dari sini saya belajar bahwa AI memberi hasil yang jauh lebih cocok kalau saya m
 | 2 | Tampilan admin hancur/overflow karena tombol bertambah banyak. | Menyarankan tambah properti CSS `flex-wrap: wrap;` pada `card-actions`. | Diterapkan, tampilan UI tombol menjadi *hugged* ke bawah. |
 | 3 | `NoReverseMatch` untuk URL `show_projects` saat mencoba memberi star. | Mengingatkan bahwa nama URL saya bentuk tunggal (`show_project`). | Diperbaiki manual di `views.py`. |
 | 4 | JSON membocorkan angka ID (user yang memberi star). | Menyuruh menambahkan argumen `use_natural_foreign_keys=True` pada `serializers.serialize()`. | Diterapkan, JSON menampilkan username. (Nanti diubah lagi karena username juga tidak boleh bocor publik). |
-| 5 | Minta step-by-step pengerjaan IA4. | Memberi panduan panjang (buat Grup Editor, tambah field relasi star, restrict create/delete, buat toggle star POST). | Dijadikan acuan utama pengerjaan IA4. |
+| 5 | Minta step-by-step pengerjaan TI4. | Memberi panduan panjang (buat Grup Editor, tambah field relasi star, restrict create/delete, buat toggle star POST). | Dijadikan acuan utama pengerjaan TI4. |
 | 6 | Error `NoReverseMatch` dengan argumen `('',)` di halaman experience. | Menyadari ada variabel *looping* yang dipanggil salah (`exp` padahal dideklarasikan `experience`). | Disesuaikan agar semua memakai variabel `experience`. |
 | 7 | Tampilan UI tombol Edit berbeda dengan tombol Delete. | Menyuruh menambahkan class `btn-action` berdampingan dengan `btn-edit`. | Diterapkan agar desain seragam (bentuk pil). |
 | 8 | Bentrok *primary key* saat `loaddata` di PWS. PostgreSQL menolak UUID masuk ke integer. | Menyarankan hapus skema tabel paksa lewat Django Shell (`DROP TABLE`), hapus `django_migrations`, dan ulangi migrasi dari awal. | Panduan ini sangat krusial dan menyelesaikan isu deployment di PWS. |
