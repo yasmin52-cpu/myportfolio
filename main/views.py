@@ -80,18 +80,23 @@ def delete_experience(request, id):
     return redirect('main:show_experience')
 
 def show_json_experiences(request):
+    """Endpoint GET JSON untuk daftar Experience (AJAX load + search).
+
+    JSON dibuat manual agar field turunan (star_count, has_starred) ikut terkirim.
+    Aman untuk guest: has_starred selalu False jika user belum login.
+    """
     query = request.GET.get("q", "").strip()
-    experiences = Experience.objects.prefetch_related('starred_by').all()
+    experiences = Experience.objects.prefetch_related('starred_by')
     if query:
         experiences = experiences.filter(
             Q(title__icontains=query) | Q(organization__icontains=query)
         )
+
+    # Menghitung dari hasil prefetch (len) agar tidak ada query tambahan per item (N+1).
+    current_user_id = request.user.id if request.user.is_authenticated else None
     data = []
-    
     for exp in experiences:
-        starred_users = exp.starred_by.all()
-        has_starred = request.user in starred_users if request.user.is_authenticated else False
-        
+        starred_users = list(exp.starred_by.all())
         data.append({
             'pk': exp.id,
             'fields': {
@@ -99,21 +104,29 @@ def show_json_experiences(request):
                 'organization': exp.organization,
                 'description': exp.description,
                 'category': exp.category,
+                'category_display': exp.get_category_display(),
                 'is_ongoing': exp.is_ongoing,
                 'image_url': exp.image_url,
-                'stars_count': starred_users.count(),
-                'has_starred': has_starred,
+                'stars_count': len(starred_users),
+                'has_starred': any(user.id == current_user_id for user in starred_users),
             }
         })
-        
+
     return JsonResponse(data, safe=False)
-    
+
+
 @require_POST
 def create_experience_ajax(request):
-    # Permission dicek di backend (JSON 403, bukan redirect login)
+    """Menambah Experience via AJAX; selalu membalas JSON dengan status HTTP yang tepat.
+
+    201 = berhasil, 400 = validasi ModelForm gagal, 403 = bukan superuser.
+    Permission dicek di backend (bukan hanya menyembunyikan tombol di template),
+    sehingga POST manual dari guest/user biasa tetap ditolak. 403 JSON dipakai
+    (bukan redirect login) karena klien AJAX tidak bisa memproses redirect HTML.
+    """
     if not request.user.is_superuser:
         return JsonResponse(
-            {"message": "Hanya pemilik portofolio yang dapat menambahkan experience."},
+            {"message": "Kamu tidak memiliki akses untuk menambahkan experience."},
             status=403,
         )
 
