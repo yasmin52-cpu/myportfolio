@@ -4,6 +4,7 @@ from main.models import Message
 from .models import Experience, Education, Project, ArtItem
 from .forms import MessageForm, ProjectForm, ExperienceForm
 from django.http import HttpResponse, JsonResponse
+from django.db.models import Q
 from django.core import serializers
 from django.views.decorators.http import require_POST
 from django.contrib import messages
@@ -31,9 +32,9 @@ def show_experience(request):
         is_editor = request.user.groups.filter(name='Editor').exists()
         
     context = {
-        'experience_list': Experience.objects.all(),
         'education_list': Education.objects.all(),
         'is_editor': is_editor,
+        'form': ExperienceForm(),
     }
     return render(request, "experience.html", context)
 
@@ -79,7 +80,12 @@ def delete_experience(request, id):
     return redirect('main:show_experience')
 
 def show_json_experiences(request):
+    query = request.GET.get("q", "").strip()
     experiences = Experience.objects.prefetch_related('starred_by').all()
+    if query:
+        experiences = experiences.filter(
+            Q(title__icontains=query) | Q(organization__icontains=query)
+        )
     data = []
     
     for exp in experiences:
@@ -102,6 +108,24 @@ def show_json_experiences(request):
         
     return JsonResponse(data, safe=False)
     
+@require_POST
+def create_experience_ajax(request):
+    # Permission dicek di backend (JSON 403, bukan redirect login)
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {"message": "Hanya pemilik portofolio yang dapat menambahkan experience."},
+            status=403,
+        )
+
+    form = ExperienceForm(request.POST)
+    if form.is_valid():
+        experience = form.save()
+        return JsonResponse(
+            {"message": "Experience berhasil ditambahkan.", "pk": experience.id},
+            status=201,
+        )
+    return JsonResponse({"errors": form.errors.get_json_data()}, status=400)
+
 @login_required(login_url="/login/")
 def toggle_star_experience(request, id):
     experience = get_object_or_404(Experience, pk=id)

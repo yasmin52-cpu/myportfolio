@@ -68,3 +68,24 @@ class ExperienceForm(ModelForm):
             "is_ongoing": CheckboxInput(attrs={'class': 'form-checkbox'}),
             "image_url": TextInput(attrs={"placeholder": "Contoh: https://drive.google.com/thumbnail?id=...&sz=w1000", "class": "form-control"}),
         }
+
+    def clean_title(self):
+        title = strip_tags(self.cleaned_data["title"]).strip()
+        if not title:
+            raise ValidationError("Role / Position tidak boleh hanya berisi tag HTML.")
+        return title
+
+    def clean_organization(self):
+        organization = strip_tags(self.cleaned_data["organization"]).strip()
+        if not organization:
+            raise ValidationError("Organization tidak boleh hanya berisi tag HTML.")
+        return organization
+
+    def clean_description(self):
+        description = strip_tags(self.cleaned_data["description"]).strip()
+        if not description:
+            raise ValidationError("Description tidak boleh hanya berisi tag HTML.")
+        return description
+
+    def clean_image_url(self):
+        return strip_tags(self.cleaned_data["image_url"]).strip()
