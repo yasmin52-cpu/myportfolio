@@ -562,3 +562,337 @@ Dari sini saya belajar bahwa AI memberi hasil yang jauh lebih cocok kalau saya m
 | 7 | Tampilan UI tombol Edit berbeda dengan tombol Delete. | Menyuruh menambahkan class `btn-action` berdampingan dengan `btn-edit`. | Diterapkan agar desain seragam (bentuk pil). |
 | 8 | Bentrok *primary key* saat `loaddata` di PWS. PostgreSQL menolak UUID masuk ke integer. | Menyarankan hapus skema tabel paksa lewat Django Shell (`DROP TABLE`), hapus `django_migrations`, dan ulangi migrasi dari awal. | Panduan ini sangat krusial dan menyelesaikan isu deployment di PWS. |
 | 9 | Mem-paste kriteria lulus (PASS) dari asisten dosen (Group, Leak, UI Editor, Delete auth, dll). | AI memberi contoh kode penambalan keamanan (JsonResponse tanpa array username, decorator check, next redirect). | Banyak *adjustment* manual karena AI menebak nama variabel/fungsi yang tidak sesuai dengan struktur proyek saya. |
+
+
+---
+
+# Tugas 5 — Web Interactivity with JavaScript
+
+## Deskripsi
+
+Tugas 5 melanjutkan pengembangan website portofolio dari Tugas 3 (Form & Data Delivery) dan Tugas 4 (Authentication, Session, Cookies, serta role/permission). Pada tahap ini, interaktivitas berbasis JavaScript diterapkan pada bagian portfolio yang dikerjakan sebelumnya dengan pola yang dipelajari pada Tutorial 05.
+
+Implementasi menggunakan AJAX dan Fetch API sehingga data dapat dimuat dan diperbarui secara asynchronous tanpa melakukan reload halaman. Fitur yang diterapkan mencakup pemuatan data melalui endpoint JSON, pencarian dengan debouncing, penambahan data melalui modal dan AJAX, notifikasi toast, serta perlindungan terhadap XSS.
+
+### Fitur yang Diimplementasikan
+
+* **AJAX data loading** — halaman daftar hanya menyediakan kerangka halaman pada initial render, sedangkan data diambil dari endpoint JSON menggunakan `fetch()`.
+* **Manual `JsonResponse`** — endpoint mengembalikan data yang memang diperlukan frontend, termasuk jumlah star dan status star pengguna yang sedang login.
+* **Loading, empty, dan error state** — pengguna mendapatkan feedback yang jelas ketika data sedang dimuat, ketika tidak ada hasil, maupun ketika request gagal.
+* **AJAX search** — pencarian dilakukan melalui endpoint JSON tanpa reload halaman.
+* **Search debouncing** — request pencarian tidak dikirim pada setiap karakter, melainkan setelah pengguna berhenti mengetik selama jeda tertentu.
+* **Modal form** — penambahan data dilakukan melalui form di dalam modal pada halaman daftar.
+* **AJAX POST** — form dikirim menggunakan Fetch API dengan validasi `ModelForm`.
+* **HTTP status yang sesuai** — response membedakan kondisi berhasil (`201`), validation error (`400`), dan akses ditolak (`403`).
+* **Server-side permission check** — hak akses tetap diverifikasi di view sehingga menyembunyikan tombol pada template bukan satu-satunya lapisan keamanan.
+* **CSRF protection** — request POST AJAX menyertakan token CSRF.
+* **No-reload update** — daftar diperbarui setelah data berhasil ditambahkan tanpa memuat ulang seluruh halaman.
+* **Toast notification** — keberhasilan, validation error, permission error, dan kegagalan request ditampilkan melalui toast.
+* **XSS protection** — data yang berasal dari server di-escape sebelum dimasukkan ke DOM melalui JavaScript.
+* **Server-side sanitization** — field teks pada `ModelForm` dibersihkan menggunakan `strip_tags` melalui method `clean_<field>`.
+* **Graceful error recovery** — kegagalan pemuatan data memberikan feedback yang jelas dan memungkinkan pengguna mencoba kembali.
+
+## Alur Interaktivitas
+
+Secara umum, alur halaman daftar adalah:
+
+```text
+Browser membuka halaman
+        |
+        v
+Template merender struktur halaman
+        |
+        v
+JavaScript menjalankan fetch()
+        |
+        v
+Django JSON endpoint
+        |
+        v
+Query Model / Database
+        |
+        v
+JsonResponse
+        |
+        v
+JavaScript menerima JSON
+        |
+        v
+Render data secara aman ke DOM
+```
+
+Untuk penambahan data:
+
+```text
+User mengisi form modal
+        |
+        v
+JavaScript intercept submit
+        |
+        v
+Fetch POST + CSRF token
+        |
+        v
+Django permission check
+        |
+        v
+ModelForm validation
+        |
+   +----+----+
+   |         |
+ valid     invalid
+   |         |
+  201       400
+   |         |
+   +----+----+
+        |
+        v
+JSON response
+        |
+        v
+Toast + refresh data dengan AJAX
+        |
+        v
+Modal ditutup tanpa page reload
+```
+
+---
+
+## Pertanyaan Reflektif
+
+### Tugas 5
+
+### 1. Jelaskan apa itu *debouncing* dan mengapa teknik ini penting diterapkan pada fitur pencarian yang menggunakan AJAX!
+
+*Debouncing* adalah teknik untuk menunda eksekusi suatu fungsi sampai pengguna berhenti melakukan suatu aktivitas selama interval waktu tertentu. Pada fitur pencarian, aktivitas tersebut biasanya berupa event `input`, yaitu ketika pengguna mengetik di kotak pencarian.
+
+Tanpa debouncing, jika fungsi pencarian langsung menjalankan `fetch()` setiap kali event `input` terjadi, setiap karakter yang diketik akan menghasilkan satu request. Misalnya, ketika pengguna mengetik `Django`, browser dapat mengirim request untuk `D`, `Dj`, `Dja`, `Djan`, `Djang`, dan `Django`. Jika pengguna mengetik dengan cepat, beberapa request dapat dikirim dalam waktu yang sangat berdekatan.
+
+Dengan debouncing, setiap input baru membatalkan timer sebelumnya. Request hanya dikirim setelah pengguna berhenti mengetik selama interval tertentu, misalnya 300 milidetik. Secara sederhana, mekanismenya adalah:
+
+```javascript
+let debounceTimer;
+
+searchInput.addEventListener("input", () => {
+    clearTimeout(debounceTimer);
+
+    debounceTimer = setTimeout(() => {
+        fetchData(searchInput.value);
+    }, 300);
+});
+```
+
+Jika pengguna terus mengetik sebelum 300 milidetik selesai, `clearTimeout()` membatalkan timer sebelumnya dan membuat timer baru. Akibatnya, request baru hanya dilakukan ketika pengguna benar-benar berhenti mengetik.
+
+Debouncing penting pada pencarian berbasis AJAX karena dapat mengurangi jumlah request yang dikirim ke server. Hal ini mengurangi beban server dan database, mengurangi lalu lintas jaringan, serta membuat aplikasi lebih efisien. Dari sisi pengguna, pencarian juga terasa lebih stabil karena browser tidak harus memproses response dari terlalu banyak request yang sebenarnya tidak diperlukan.
+
+Debouncing juga berbeda dengan throttling. Debouncing menunggu sampai aktivitas berhenti sebelum menjalankan fungsi, sedangkan throttling membatasi fungsi agar hanya dapat dijalankan paling banyak sekali dalam interval tertentu. Untuk search-as-you-type, debouncing lebih sesuai karena saya biasanya ingin mencari berdasarkan query yang sudah selesai diketik, bukan berdasarkan setiap bagian query.
+
+Dalam implementasi Tugas 5, debouncing digunakan pada event pencarian sehingga AJAX request dikirim setelah pengguna berhenti mengetik, bukan untuk setiap karakter.
+
+### 2. Jelaskan fungsi dari penggunaan `await` ketika kita menggunakan `fetch()`! Apa yang akan terjadi jika kita tidak menggunakan `await`?
+
+`fetch()` merupakan fungsi asynchronous yang mengembalikan sebuah `Promise`. Promise tersebut merepresentasikan hasil dari operasi HTTP yang belum tentu selesai ketika baris kode tersebut dijalankan.
+
+`await` digunakan di dalam fungsi `async` untuk menunggu Promise tersebut selesai sebelum melanjutkan ke baris berikutnya.
+
+Contohnya:
+
+```javascript
+const response = await fetch(url);
+const data = await response.json();
+```
+
+Pada baris pertama, JavaScript menunggu sampai request `fetch()` menghasilkan response. Setelah response tersedia, nilai tersebut disimpan ke dalam `response`. Kemudian `await response.json()` menunggu proses membaca body response dan mengubahnya menjadi object JavaScript.
+
+`await` tidak berarti seluruh browser berhenti bekerja. Karena `fetch()` menggunakan Promise dan JavaScript berjalan dengan mekanisme asynchronous/event loop, browser tetap dapat menangani pekerjaan lain. Yang ditunda adalah kelanjutan fungsi asynchronous tersebut sampai Promise selesai.
+
+Jika `await` tidak digunakan, nilai yang diperoleh dari `fetch()` bukan response langsung, melainkan sebuah `Promise`. Contohnya:
+
+```javascript
+const response = fetch(url);
+console.log(response);
+```
+
+`response` pada contoh tersebut masih berupa Promise sehingga kita belum dapat langsung menggunakan:
+
+```javascript
+response.json();
+```
+
+untuk memperoleh data JSON. Kode akan salah karena method `json()` dimiliki oleh `Response`, bukan oleh Promise.
+
+Alternatif tanpa `await` adalah menggunakan `.then()`:
+
+```javascript
+fetch(url)
+    .then(response => response.json())
+    .then(data => {
+        // menggunakan data
+    });
+```
+
+Jadi `await` bukan satu-satunya cara untuk menangani `fetch()`, tetapi membuat alur asynchronous terlihat lebih seperti kode sinkron sehingga lebih mudah dibaca. Dalam Tugas 5, `await` digunakan agar proses pengambilan response, pembacaan JSON, dan penanganan hasil dapat dilakukan secara berurutan dan mudah dipahami.
+
+Perlu diperhatikan juga bahwa `await fetch()` tidak otomatis menganggap HTTP 400 atau 500 sebagai JavaScript exception. Karena itu, response tetap perlu diperiksa menggunakan `response.ok` atau `response.status`. Inilah alasan error handling pada AJAX perlu membedakan antara network error dan HTTP error dari server.
+
+### 3. Jelaskan apa itu serangan XSS (*Cross-Site Scripting*) dan mengapa data yang ditampilkan melalui AJAX/JavaScript lebih rentan terhadap serangan ini daripada data yang ditampilkan langsung melalui *template* Django!
+
+XSS (*Cross-Site Scripting*) adalah serangan ketika penyerang berhasil memasukkan konten yang dianggap sebagai HTML atau JavaScript ke halaman web sehingga browser korban mengeksekusinya sebagai kode, bukan sekadar menampilkannya sebagai data.
+
+Contoh payload sederhana adalah:
+
+```html
+<img src="x" onerror="alert('XSS!')">
+```
+
+Jika nilai tersebut dimasukkan ke halaman menggunakan `innerHTML` tanpa escaping, browser dapat memperlakukannya sebagai elemen HTML dan event handler `onerror` dapat dijalankan.
+
+Pada template Django, output variabel secara default menggunakan HTML escaping ketika ditampilkan melalui template syntax biasa seperti:
+
+```django
+<h3>{{ project.title }}</h3>
+```
+
+Karakter khusus seperti `<`, `>`, `&`, dan tanda kutip akan diubah menjadi representasi HTML yang aman. Karena itu, string seperti `<img ...>` biasanya ditampilkan sebagai teks, bukan dibuat menjadi elemen HTML aktif.
+
+Namun, ketika data JSON dari AJAX diterima oleh JavaScript, Django tidak lagi berada di tahap yang langsung menghasilkan HTML untuk nilai tersebut. JavaScript sendiri yang menentukan bagaimana data dimasukkan ke DOM. Jika developer melakukan:
+
+```javascript
+element.innerHTML = data.title;
+```
+
+maka browser akan mem-parsing `data.title` sebagai HTML. Jika `data.title` berasal dari user atau sumber yang tidak dipercaya, string berbahaya dapat menjadi markup aktif.
+
+Karena itu, data yang ditampilkan melalui AJAX bukan secara otomatis aman hanya karena berasal dari endpoint Django. Keamanan tetap bergantung pada bagaimana JavaScript memasukkan data tersebut ke DOM.
+
+Dalam Tugas 5, saya menggunakan dua lapisan perlindungan:
+
+1. **Client-side escaping / safe DOM manipulation**
+
+   Nilai teks yang berasal dari server di-escape sebelum digunakan dalam HTML yang dibangun JavaScript. Jika suatu elemen tidak membutuhkan HTML, pendekatan yang lebih aman adalah menggunakan `textContent`, karena browser memperlakukannya sebagai teks dan bukan sebagai markup.
+
+2. **Server-side sanitization**
+
+   Input teks pada `ModelForm` juga dibersihkan menggunakan `strip_tags` dalam method `clean_<field>`. Jika sebuah input hanya terdiri dari tag HTML berbahaya, validasi dapat menolaknya.
+
+Kedua mekanisme tersebut memiliki fungsi yang berbeda. `strip_tags` bukan pengganti HTML escaping. Sanitization dilakukan ketika data masuk, sedangkan escaping diperlukan ketika data ditampilkan. Data lama yang sudah tersimpan sebelum sanitization juga tidak otomatis menjadi aman hanya karena validasi form baru telah diperbaiki.
+
+Dengan demikian, prinsip utama yang digunakan adalah **jangan mempercayai data hanya karena data tersebut berasal dari database atau endpoint milik sendiri**. Data tetap harus diperlakukan sebagai untrusted data ketika dimasukkan ke dalam DOM.
+
+---
+
+## Verifikasi Implementasi
+
+Sebelum submission, implementasi Tugas 5 diperiksa terhadap kondisi berikut:
+
+* halaman dapat dimuat oleh pengunjung yang belum login;
+* data daftar diambil melalui endpoint JSON;
+* loading state muncul selama proses pengambilan data;
+* empty state muncul ketika hasil pencarian kosong;
+* error state ditampilkan ketika request gagal;
+* pencarian tidak menyebabkan page reload;
+* debounce mencegah request untuk setiap karakter;
+* form tambah data berada di modal;
+* POST menggunakan CSRF token;
+* server melakukan permission check;
+* response berhasil menggunakan status `201`;
+* validation error menggunakan status `400`;
+* akses yang tidak diperbolehkan menggunakan status `403`;
+* data baru muncul pada daftar tanpa reload halaman;
+* toast success/error memberikan feedback;
+* pesan validation dari server diteruskan ke pengguna;
+* data yang dirender melalui JavaScript di-escape;
+* input teks dibersihkan melalui `clean_<field>` dan `strip_tags`;
+* payload XSS tidak dieksekusi;
+* implementasi tidak mengubah atau merusak fitur authentication, role, dan star dari Tugas 4.
+
+---
+
+## Progress
+
+### Individual Assignment 5
+
+* Menerapkan pola AJAX dari Tutorial 05 pada bagian portfolio yang sudah dikembangkan pada Tugas sebelumnya.
+* Menambahkan endpoint JSON dengan `JsonResponse` manual.
+* Mempertahankan informasi jumlah star dan status star pengguna pada response JSON.
+* Mengubah rendering daftar menjadi asynchronous dengan Fetch API.
+* Menambahkan loading, empty, dan error state.
+* Menambahkan pencarian AJAX dengan debouncing.
+* Memindahkan proses penambahan data ke modal pada halaman daftar.
+* Menambahkan POST AJAX dengan `ModelForm`.
+* Memastikan status HTTP membedakan keberhasilan, validation error, dan forbidden access.
+* Mempertahankan permission check di sisi server.
+* Menambahkan CSRF protection pada request AJAX.
+* Memperbarui daftar setelah penambahan data tanpa page reload.
+* Menggunakan toast untuk feedback success dan error.
+* Menambahkan escaping pada data yang dirender melalui JavaScript.
+* Menambahkan sanitization `strip_tags` pada field teks melalui `clean_<field>`.
+* Menambahkan graceful error recovery untuk request AJAX.
+
+---
+
+# AI Disclosure — Individual Assignment 5
+
+## AI Tools Used
+
+| Tool | Tujuan Penggunaan | Jenis Bantuan |
+|---|---|---|
+| **Google Gemini** | Mengerjakan dan memahami Tutorial 05 sebagai prasyarat IA5, terutama AJAX/Fetch API, debouncing, modal, toast, CSRF, dan XSS protection | Penjelasan konsep, code suggestion, debugging, troubleshooting |
+| **Claude (Anthropic)** | Membantu mengaudit requirement, memeriksa struktur kode, dan melakukan rubric review | Code generation, code review, security review, requirement audit, debugging |
+
+## AI Usage & Prompting Strategy
+
+Untuk Tutorial 05, Google Gemini digunakan secara bertahap berdasarkan instruksi tutorial. Prompt diberikan dengan konteks struktur project yang sudah ada sehingga solusi dapat disesuaikan dengan model, form, URL, dan template yang digunakan. Beberapa bagian yang dibahas meliputi implementasi AJAX, pencarian dengan debouncing, modal menggunakan Popover API, pengiriman form menggunakan Fetch API, toast, CSRF, dan XSS.
+
+## Parts Assisted by AI
+
+| Bagian | AI | Bantuan AI | Verifikasi/Perbaikan Manual |
+|---|---|---|---|
+| Adaptasi AJAX ke bagian portfolio | Claude | Menyusun endpoint JSON, fetch, dan rendering data | Menyesuaikan hasil dengan struktur model, URL, template, dan fitur existing |
+| Search debouncing | Claude + Gemini | Menjelaskan dan mengimplementasikan debounce | Memeriksa perilaku pencarian dan memastikan tidak terjadi reload |
+| Modal + AJAX POST | Claude + Gemini | Menyusun alur submit form melalui Fetch API | Mempertahankan struktur modal dan UI project yang sudah ada |
+| CSRF | Claude + Gemini | Menyusun pengiriman token melalui `X-CSRFToken` / form data | Memastikan CSRF tetap aktif dan tidak menggunakan `csrf_exempt` |
+| Permission check | Claude | Mengaudit agar akses tidak hanya dibatasi melalui template | Memastikan role dari Tugas 4 tetap menjadi sumber aturan akses |
+| Final rubric audit | Claude | Membandingkan implementasi dengan checklist dan target rubric | Melakukan pengecekan akhir pada source code dan aplikasi |
+
+## Critical Reflection on AI Limitations
+
+AI tidak selalu menghasilkan kode yang langsung cocok dengan project. Pengalaman pada tugas sebelumnya menunjukkan bahwa AI dapat membuat asumsi berdasarkan contoh generik, misalnya menggunakan nama fungsi, field, URL, atau struktur model yang tidak ada pada project saya. Karena itu, pada IA5 saya memberikan source code yang relevan dan requirement lengkap sebelum meminta implementasi.
+
+Pada Tutorial 05, beberapa contoh kode dari AI awalnya menggunakan struktur yang berasal dari tutorial Projects. Struktur tersebut tidak dapat langsung dipindahkan ke bagian portfolio lain karena nama field, URL, permission, dan komponen UI project saya berbeda. Kode perlu disesuaikan dengan project aktual.
+
+Hal lain yang perlu diperhatikan adalah bahwa AI dapat menyatakan sebuah implementasi "sudah memenuhi checklist" berdasarkan source code tanpa benar-benar mengetahui seluruh kondisi runtime, database, browser, atau konfigurasi deployment. Oleh karena itu, klaim dari AI tetap saya perlakukan sebagai hasil review, bukan sebagai bukti pengujian.
+
+## Manual Improvements & Verification
+
+Perubahan manual dan proses verifikasi yang dilakukan dalam pengembangan IA5 meliputi:
+
+* membandingkan nama field yang disarankan AI dengan field yang benar-benar ada pada model;
+* memastikan URL yang digunakan JavaScript sesuai dengan `main/urls.py`;
+* mempertahankan role dan permission dari Tugas 4;
+* memastikan guest tetap dapat membaca data;
+* memastikan permission tetap diperiksa di backend;
+* memeriksa response status sesuai requirement, bukan hanya response body;
+* menguji state loading, empty, dan error;
+* memeriksa bahwa search tidak melakukan page reload;
+* memastikan form POST menggunakan CSRF;
+* menguji validation error dari `ModelForm`;
+* menguji payload XSS seperti `<img src="x" onerror="alert('XSS!')">`;
+* mengaudit penggunaan `innerHTML` agar tidak ada nilai server yang dimasukkan tanpa escaping;
+* mempertahankan fungsi star dari Tugas 4;
+* menghindari refactor yang tidak diperlukan.
+
+AI diposisikan sebagai reviewer dan coding assistant. Keputusan akhir mengenai apakah suatu solusi sesuai dengan requirement, struktur project, dan desain tetap dilakukan berdasarkan source code dan hasil pengujian project.
+
+## AI Prompting Log — Individual Assignment 5
+
+| Tahap | AI | Tujuan | Strategi Prompt | Hasil |
+|---|---|---|---|---|
+| Tutorial 05 | Gemini | Memahami implementasi AJAX | Memberikan instruksi tutorial dan struktur project | Implementasi Fetch API dan JSON |
+| Tutorial 05 | Gemini | Search debouncing | Meminta penjelasan sekaligus adaptasi ke struktur project | Search dijalankan setelah jeda input |
+| Tutorial 05 | Gemini | Modal + AJAX POST | Memberikan model/form/template existing | Form dikirim tanpa page reload |
+| Tutorial 05 | Gemini | XSS protection | Memberikan contoh payload dan source code rendering | `escapeHtml` + `strip_tags` diterapkan |
+| TI5 | Claude | Target rubric 4 | Memberikan rubric secara eksplisit | Code quality dan UX diaudit terhadap kriteria nilai 4 |
+| TI5 | Claude | Security audit | Meminta audit CSRF, permission, XSS, dan HTTP status | Kekurangan security/error handling diidentifikasi dan diperbaiki |
+| TI5 | Claude | Final self-review | Meminta checklist audit setelah coding | Implementasi dibandingkan ulang dengan seluruh requirement |
