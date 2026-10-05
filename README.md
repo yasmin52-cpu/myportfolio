@@ -845,6 +845,9 @@ Sebelum submission, implementasi Tugas 5 diperiksa terhadap kondisi berikut:
 
 Untuk Tutorial 05, Google Gemini digunakan secara bertahap berdasarkan instruksi tutorial. Prompt diberikan dengan konteks struktur project yang sudah ada sehingga solusi dapat disesuaikan dengan model, form, URL, dan template yang digunakan. Beberapa bagian yang dibahas meliputi implementasi AJAX, pencarian dengan debouncing, modal menggunakan Popover API, pengiriman form menggunakan Fetch API, toast, CSRF, dan XSS.
 
+`https://share.gemini.google/ZHOTEV25B89q`
+`https://share.gemini.google/o4oIK1KtdGna`
+
 ## Parts Assisted by AI
 
 | Bagian | AI | Bantuan AI | Verifikasi/Perbaikan Manual |
