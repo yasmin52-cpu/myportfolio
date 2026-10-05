@@ -4,29 +4,32 @@
 {% endblock meta %}
 {% block content %}
     <main>
-        <section class="experience-section">
+        <section class="portfolio-section">
             <div class="container">
-                <h1>Buat Akun</h1>
-                <form method="post" action="{% url 'main:register' %}" class="project-form">
-                    {% csrf_token %}
-                    {% for error in form.non_field_errors %}
-                        <p class="form-error">{{ error }}</p>
-                    {% endfor %}
-                    {% for field in form %}
-                        <div class="form-group">
-                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                            {% if field.help_text %}
-                                <div class="form-help">{{ field.help_text }}</div>
-                            {% endif %}
-                            {% for error in field.errors %}
-                                <p class="form-error">{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endfor %}
-                    <button type="submit" class="button">Daftar</button>
-                </form>
-                <p>Sudah punya akun? <a href="{% url 'main:login' %}">Login di sini</a>.</p>
+                <h2 class="section-badge">Register</h2>
+                
+                <div class="message-card">
+                    <form method="post" action="{% url 'main:register' %}" class="project-form">
+                        {% csrf_token %}
+                        {% for error in form.non_field_errors %}
+                            <p class="form-error">{{ error }}</p>
+                        {% endfor %}
+                        {% for field in form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <div class="form-help" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">{{ field.help_text }}</div>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <p class="form-error">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="button" style="margin-top: 1rem;">Daftar</button>
+                    </form>
+                    <p style="margin-top: 1.5rem;">Sudah punya akun? <a href="{% url 'main:login' %}">Login di sini</a>.</p>
+                </div>
             </div>
         </section>
     </main>

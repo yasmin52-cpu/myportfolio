@@ -49,7 +49,7 @@
                    placeholder="Cari berdasarkan role atau organisasi"
                    class="project-search__input"
                    aria-label="Cari berdasarkan role atau organisasi">
-            <button type="submit" class="btn-primary">Cari</button>
+            <button type="submit" class="button">Cari</button>
         </form>
 
         <!-- Loading State -->
@@ -60,7 +60,7 @@
         <!-- Error State -->
         <div id="error-exp" class="empty-state hide" role="alert">
             <p>Gagal memuat data experiences. Periksa koneksi lalu coba lagi.</p>
-            <button type="button" id="retry-exp-button" class="btn-primary">Coba Lagi</button>
+            <button type="button" id="retry-exp-button" class="button">Coba Lagi</button>
         </div>
 
         <!-- Empty State -->
@@ -120,7 +120,7 @@
             ? `<img src="${escapeHtml(exp.image_url)}" alt="${escapeHtml(exp.organization)} Logo" class="exp-icon">`
             : '';
 
-        const periodText = exp.is_ongoing ? "Sedang Berlangsung" : "Selesai";
+        const periodText = exp.is_ongoing ? "Ongoing" : "Finished";
 
         const isStarredClass = exp.has_starred ? " is-starred" : "";
         const starText = exp.has_starred ? "Unstar" : "Star";

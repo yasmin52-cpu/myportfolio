@@ -28,7 +28,8 @@ body {
     line-height: 1.6;
 }
 
-h1, .brand {
+h1,
+.brand {
     font-family: "Space Grotesk", -apple-system, sans-serif;
 }
 
@@ -418,7 +419,7 @@ h1, .brand {
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     transition: all 0.2s ease;
     text-align: center;
     box-sizing: border-box;
@@ -428,18 +429,18 @@ h1, .brand {
 .art-nav-btn:hover {
     background-color: var(--accent-dark);
     color: var(--paper);
-    box-shadow: inset 0 0 0 2px var(--accent), 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: inset 0 0 0 2px var(--accent), 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Active tab button */
-#tab-characters:checked ~ .art-portfolio-layout .btn-characters,
-#tab-backgrounds:checked ~ .art-portfolio-layout .btn-backgrounds,
-#tab-icons:checked ~ .art-portfolio-layout .btn-icons,
-#tab-tilemaps:checked ~ .art-portfolio-layout .btn-tilemaps,
-#tab-spritesheets:checked ~ .art-portfolio-layout .btn-spritesheets {
+#tab-characters:checked~.art-portfolio-layout .btn-characters,
+#tab-backgrounds:checked~.art-portfolio-layout .btn-backgrounds,
+#tab-icons:checked~.art-portfolio-layout .btn-icons,
+#tab-tilemaps:checked~.art-portfolio-layout .btn-tilemaps,
+#tab-spritesheets:checked~.art-portfolio-layout .btn-spritesheets {
     background-color: var(--accent-dark);
     color: var(--paper);
-    box-shadow: inset 0 0 0 2px var(--accent), 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: inset 0 0 0 2px var(--accent), 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .art-gallery-container {
@@ -478,6 +479,7 @@ h1, .brand {
     0% {
         transform: translateX(0);
     }
+
     100% {
         transform: translateX(calc(-50% - 0.75rem));
     }
@@ -500,11 +502,11 @@ h1, .brand {
 }
 
 /* Show the gallery/track that matches the checked tab */
-#tab-characters:checked ~ .art-portfolio-layout .marquee-characters,
-#tab-backgrounds:checked ~ .art-portfolio-layout .marquee-backgrounds,
-#tab-icons:checked ~ .art-portfolio-layout .marquee-icons,
-#tab-tilemaps:checked ~ .art-portfolio-layout .marquee-tilemaps,
-#tab-spritesheets:checked ~ .art-portfolio-layout .marquee-spritesheets {
+#tab-characters:checked~.art-portfolio-layout .marquee-characters,
+#tab-backgrounds:checked~.art-portfolio-layout .marquee-backgrounds,
+#tab-icons:checked~.art-portfolio-layout .marquee-icons,
+#tab-tilemaps:checked~.art-portfolio-layout .marquee-tilemaps,
+#tab-spritesheets:checked~.art-portfolio-layout .marquee-spritesheets {
     display: block;
 }
 
@@ -652,7 +654,8 @@ h1, .brand {
     z-index: 999;
     align-items: center;
     justify-content: center;
-    font-family: inherit; /* Menyamakan font dengan parent/body */
+    font-family: inherit;
+    /* Menyamakan font dengan parent/body */
 }
 
 .project-delete-modal:popover-open {
@@ -849,9 +852,17 @@ h1, .brand {
     color: var(--text-muted);
 }
 
-.toast-success { border-left: 4px solid #22c55e; }
-.toast-error { border-left: 4px solid #b42318; }
-.toast-normal { border-left: 4px solid var(--accent); }
+.toast-success {
+    border-left: 4px solid #22c55e;
+}
+
+.toast-error {
+    border-left: 4px solid #b42318;
+}
+
+.toast-normal {
+    border-left: 4px solid var(--accent);
+}
 
 .project-form-modal {
     display: none;
@@ -922,6 +933,36 @@ h1, .brand {
     justify-content: flex-end;
     gap: 0.75rem;
     margin-top: 1.5rem;
+}
+
+.hide {
+    display: none !important;
+}
+
+.project-search {
+    display: flex;
+    gap: 10px;
+    max-width: 600px;
+    margin: 0 auto;
+    align-items: center;
+}
+
+.project-search__input {
+    flex-grow: 1;
+    padding: 0.75rem 1rem;
+    background-color: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--ink);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-search__input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(227, 101, 193, 0.25);
 }
 
 @media (max-width: 600px) {
