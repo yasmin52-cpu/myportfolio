@@ -847,6 +847,7 @@ Untuk Tutorial 05, Google Gemini digunakan secara bertahap berdasarkan instruksi
 
 `https://share.gemini.google/ZHOTEV25B89q`
 `https://share.gemini.google/o4oIK1KtdGna`
+`https://claude.ai/share/8f2e281e-8563-47e6-9f7f-8bf0c885fd67`
 
 ## Parts Assisted by AI
 
