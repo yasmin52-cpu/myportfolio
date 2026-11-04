@@ -7,7 +7,7 @@
             <h2>Send a message to Yasmin!</h2>
             <p class="subtitle">Leave a message below!</p>
 
-            <form method="POST" action="{% url 'main:send_message' %}" class="project-form">
+            <form method="POST" action="{{ form_action }}" class="project-form">
                 {% csrf_token %}
                 
                 {% for field in form %}

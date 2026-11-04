@@ -13,6 +13,8 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
+from rest_framework import viewsets
+from rest_framework.filters import SearchFilter
 
 def show_main(request):
     last_login = request.COOKIES.get('last_login', 'Belum ada sesi login / Cookie tidak ditemukan')
@@ -300,6 +302,7 @@ def send_message(request):
     context = {
         "form": form,
         "message_list": message_list,
+        'form_action': request.path,
     }
     return render(request, "message_form.html", context)
 
