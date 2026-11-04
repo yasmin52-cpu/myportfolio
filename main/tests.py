@@ -70,16 +70,6 @@ class PortfolioViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'project.html')
 
-    def test_projects_data_appears_when_it_exists(self):
-        Project.objects.create(
-            title="KALANANTI",
-            description="A narrative mystery game.",
-            image_url="/static/img/KALANANTI.png",
-            play_url="https://example.com"
-        )
-        response = self.client.get(reverse('main:show_project'))
-        self.assertContains(response, "KALANANTI")
-
     def test_projects_empty_state_appears_when_no_data(self):
         response = self.client.get(reverse('main:show_project'))
         self.assertContains(response, "Belum ada proyek yang ditambahkan.")
@@ -91,17 +81,19 @@ class PortfolioViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'experience.html')
 
-    def test_experience_data_appears_when_it_exists(self):
-        Experience.objects.create(
-            title="Manager of Creative Development",
-            organization="Open House Fasilkom UI 2026",
-            description="Managing design sprints.",
-            category="ORGANIZATION",
-            is_ongoing=True,
-            image_url="/static/img/OH26.jpg"
-        )
-        response = self.client.get(reverse('main:show_experience'))
-        self.assertContains(response, "Open House Fasilkom UI 2026")
+    def test_projects_data_appears_when_it_exists(self):  # Memastikan halaman menyediakan grid dan API menyediakan proyek.
+        Project.objects.create(title="KALANANTI", description="A narrative mystery game.", image_url="/static/img/KALANANTI.png", play_url="https://example.com")  # Menyiapkan proyek dengan field wajib.
+        page = self.client.get(reverse("main:show_project"))  # Mengambil HTML halaman Projects.
+        self.assertContains(page, 'id="grid"')  # Memastikan wadah kartu AJAX tersedia.
+        data = self.client.get(reverse("api:project-list")).json()  # Mengambil data dari API DRF yang dipakai halaman baru.
+        self.assertEqual(data[0]["title"], "KALANANTI")  # Memastikan judul proyek dikirim API.
+
+    def test_experience_data_appears_when_it_exists(self):  # Memastikan halaman menyediakan grid dan endpoint lama menyediakan pengalaman.
+        Experience.objects.create(title="Manager of Creative Development", organization="Open House Fasilkom UI 2026", description="Managing design sprints.", category="ORGANIZATION", is_ongoing=True, image_url="/static/img/OH26.jpg")  # Menyiapkan pengalaman sesuai model.
+        page = self.client.get(reverse("main:show_experience"))  # Mengambil HTML halaman Experience.
+        self.assertContains(page, 'id="experience-grid"')  # Memastikan wadah kartu AJAX tersedia.
+        data = self.client.get(reverse("main:show_json_experiences")).json()  # Mengambil JSON dari endpoint yang masih dipakai halaman Experience.
+        self.assertEqual(data[0]["fields"]["organization"], "Open House Fasilkom UI 2026")  # Memastikan organisasi tersedia dalam kontrak JSON lama.
 
     def test_experience_empty_state_appears_when_no_data(self):
         response = self.client.get(reverse('main:show_experience'))

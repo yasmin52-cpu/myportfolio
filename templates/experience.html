@@ -78,8 +78,11 @@
 </section>
 
 <script>
-    const BASE_EXPERIENCE_ENDPOINT = "{% url 'main:show_json_experiences' %}";
-    const CREATE_EXPERIENCE_ENDPOINT = "{% url 'main:create_experience_ajax' %}";
+    const BASE_EXPERIENCE_ENDPOINT = "{% url 'api:experience-list' %}"; // Memakai API DRF untuk GET daftar dan POST tambah.
+    const CREATE_EXPERIENCE_ENDPOINT = BASE_EXPERIENCE_ENDPOINT; // Memakai URL koleksi yang sama untuk menambah data.
+    const DETAIL_EXPERIENCE_PATTERN = "{% url 'api:experience-detail' 0 %}"; // Menyiapkan URL detail dengan ID sementara.
+    const STAR_EXPERIENCE_PATTERN = "{% url 'api:experience-star' 0 %}"; // Menyiapkan URL star dengan ID sementara.
+    const IS_AUTHENTICATED = "{{ user.is_authenticated|yesno:'true,false' }}" === "true"; // Menentukan apakah pengguna dapat memberi star.
     const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
     const IS_EDITOR = "{{ is_editor|yesno:'true,false' }}" === "true";
     const SEARCH_DEBOUNCE_DELAY = 300;
