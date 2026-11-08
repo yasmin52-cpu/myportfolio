@@ -88,12 +88,23 @@ class PortfolioViewTests(TestCase):
         data = self.client.get(reverse("api:project-list")).json()  # Mengambil data dari API DRF yang dipakai halaman baru.
         self.assertEqual(data[0]["title"], "KALANANTI")  # Memastikan judul proyek dikirim API.
 
-    def test_experience_data_appears_when_it_exists(self):  # Memastikan halaman menyediakan grid dan endpoint lama menyediakan pengalaman.
-        Experience.objects.create(title="Manager of Creative Development", organization="Open House Fasilkom UI 2026", description="Managing design sprints.", category="ORGANIZATION", is_ongoing=True, image_url="/static/img/OH26.jpg")  # Menyiapkan pengalaman sesuai model.
+    def test_experience_data_appears_when_it_exists(self):  # Memastikan halaman Experience dan endpoint DRF menampilkan data yang sesuai.
+        Experience.objects.create(  # Membuat Experience sebagai data awal pengujian.
+            title="Manager of Creative Development",  # Menentukan title Experience.
+            organization="Open House Fasilkom UI 2026",  # Menentukan organisasi Experience.
+            description="Managing design sprints.",  # Menentukan deskripsi Experience.
+            category="ORGANIZATION",  # Menggunakan kategori yang valid.
+            is_ongoing=True,  # Menentukan bahwa pengalaman masih berlangsung.
+            image_url="/static/img/OH26.jpg",  # Menentukan path gambar.
+        )  # Mengakhiri pembuatan Experience.
+
         page = self.client.get(reverse("main:show_experience"))  # Mengambil HTML halaman Experience.
-        self.assertContains(page, 'id="experience-grid"')  # Memastikan wadah kartu AJAX tersedia.
-        data = self.client.get(reverse("main:show_json_experiences")).json()  # Mengambil JSON dari endpoint yang masih dipakai halaman Experience.
-        self.assertEqual(data[0]["fields"]["organization"], "Open House Fasilkom UI 2026")  # Memastikan organisasi tersedia dalam kontrak JSON lama.
+        self.assertContains(page, 'id="experience-grid"')  # Memastikan container untuk hasil API tersedia.
+
+        data = self.client.get(reverse("api:experience-list")).json()  # Mengambil daftar Experience melalui API DRF baru.
+        self.assertEqual(data[0]["organization"], "Open House Fasilkom UI 2026")  # Memastikan field organization tersedia pada respons API.
+        self.assertNotIn("fields", data[0])  # Memastikan format respons tidak lagi menggunakan struktur JSON Django lama.
+
 
     def test_experience_empty_state_appears_when_no_data(self):
         response = self.client.get(reverse('main:show_experience'))
