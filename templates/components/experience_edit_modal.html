@@ -1,0 +1,95 @@
+
+<!-- Membuat container modal edit yang menggunakan Popover API bawaan browser. -->
+<div id="edit-experience-modal"
+     class="project-form-modal"
+     popover="auto"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="edit-experience-modal-title">
+
+    <!-- Membuat area backdrop yang bisa diklik untuk menutup modal. -->
+    <button type="button"
+            class="project-form-modal__backdrop"
+            popovertarget="edit-experience-modal"
+            popovertargetaction="hide"
+            aria-label="Tutup form edit experience"></button>
+
+    <!-- Membuat container utama yang menampung isi form. -->
+    <div class="project-form-modal__content" style="background: var(--paper); padding: 20px; border-radius: var(--radius); z-index: 100;">
+
+        <!-- Membuat tombol silang untuk menutup modal. -->
+        <button type="button"
+                class="project-form-modal__close"
+                popovertarget="edit-experience-modal"
+                popovertargetaction="hide"
+                aria-label="Tutup form edit experience">×</button>
+
+        <!-- Menampilkan judul modal dan menghubungkannya dengan aria-labelledby. -->
+        <h2 id="edit-experience-modal-title">Edit Experience</h2>
+
+        <!-- Membuat form edit yang akan ditangani oleh JavaScript. -->
+        <form id="edit-experience-form" class="project-form">
+
+            <!-- Menyediakan token CSRF pada halaman untuk keamanan request. -->
+            {% csrf_token %}
+
+            <!-- Menyimpan ID Experience yang sedang diedit. -->
+            <input type="hidden" id="edit-experience-id" name="id">
+
+            <!-- Membuat input untuk title atau posisi. -->
+            <div class="form-group">
+                <label for="edit-exp-title">Role / Position</label>
+                <input type="text" id="edit-exp-title" name="title" maxlength="255" required class="form-control">
+            </div>
+
+            <!-- Membuat input untuk nama organisasi. -->
+            <div class="form-group">
+                <label for="edit-exp-organization">Organization / Company</label>
+                <input type="text" id="edit-exp-organization" name="organization" maxlength="255" required class="form-control">
+            </div>
+
+            <!-- Membuat textarea untuk deskripsi pengalaman. -->
+            <div class="form-group">
+                <label for="edit-exp-description">Description</label>
+                <textarea id="edit-exp-description" name="description" rows="4" required class="form-control"></textarea>
+            </div>
+
+            <!-- Membuat dropdown kategori sesuai CATEGORY_CHOICES pada model. -->
+            <div class="form-group">
+                <label for="edit-exp-category">Category</label>
+                <select id="edit-exp-category" name="category" class="form-control">
+                    <option value="ORGANIZATION">Organization</option>
+                    <option value="ACADEMIC">Academic</option>
+                    <option value="INTERNSHIP">Internship</option>
+                </select>
+            </div>
+
+            <!-- Membuat checkbox untuk status ongoing. -->
+            <div class="form-group">
+                <label for="edit-exp-ongoing">
+                    <input type="checkbox" id="edit-exp-ongoing" name="is_ongoing">
+                    Ongoing
+                </label>
+            </div>
+
+            <!-- Membuat input URL gambar yang boleh dikosongkan. -->
+            <div class="form-group">
+                <label for="edit-exp-image">Image URL</label>
+                <input type="text" id="edit-exp-image" name="image_url" maxlength="255" class="form-control">
+            </div>
+
+            <!-- Membuat container untuk tombol aksi modal. -->
+            <div class="project-form-modal__actions" style="margin-top: 20px; display: flex; gap: 10px;">
+
+                <!-- Membuat tombol pembatalan yang menutup modal. -->
+                <button type="button"
+                        class="btn-action btn-delete"
+                        popovertarget="edit-experience-modal"
+                        popovertargetaction="hide">Batal</button>
+
+                <!-- Membuat tombol submit yang akan mengirim PATCH melalui JavaScript. -->
+                <button type="submit" class="button">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+</div>

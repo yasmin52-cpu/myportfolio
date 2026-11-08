@@ -74,6 +74,11 @@
         {% if user.is_superuser %}
             {% include "components/experience_form_modal.html" %}
         {% endif %}
+
+        {% if user.is_superuser or is_editor %}
+            {% include "components/experience_edit_modal.html" %}
+        {% endif %}
+
     </div>
 </section>
 
@@ -130,7 +135,13 @@
 
         let adminHtml = '';
         if (IS_SUPERUSER || IS_EDITOR) {
-            adminHtml += `<a href="${editUrl}" class="btn-action btn-edit">Edit</a>`;
+            adminHtml += `
+                <button type="button"
+                        class="btn-action btn-edit"
+                        data-edit-id="${expId}">
+                    Edit
+                </button>
+            `; // Membuat tombol Edit yang menyimpan ID Experience dan tidak melakukan navigasi halaman.
         }
         if (IS_SUPERUSER) { // Hanya superuser yang boleh melihat tombol Delete.
             adminHtml += `
@@ -231,6 +242,68 @@
         } // Menutup blok finally.
     } // Menutup fungsi deleteExperience.
 
+    function openEditExperience(expId) { // Membuka modal edit untuk Experience berdasarkan ID.
+        const cardData = currentExperiences.find(exp => String(exp.id) === String(expId)); // Mencari data Experience yang sesuai dengan ID tombol.
+
+        if (!cardData) { // Memeriksa apakah data Experience ditemukan.
+            showToast('Error', 'Data Experience tidak ditemukan.', 'error'); // Menampilkan pesan error jika data tidak ada.
+            return; // Menghentikan fungsi agar modal tidak dibuka dengan data kosong.
+        } // Menutup pemeriksaan data.
+
+        document.getElementById('edit-experience-id').value = cardData.id; // Menyimpan ID Experience untuk menentukan endpoint PATCH.
+        document.getElementById('edit-exp-title').value = cardData.title; // Mengisi input title dengan data sebelumnya.
+        document.getElementById('edit-exp-organization').value = cardData.organization; // Mengisi input organization dengan data sebelumnya.
+        document.getElementById('edit-exp-description').value = cardData.description; // Mengisi textarea description dengan data sebelumnya.
+        document.getElementById('edit-exp-category').value = cardData.category; // Memilih kategori Experience yang sedang diedit.
+        document.getElementById('edit-exp-ongoing').checked = cardData.is_ongoing; // Menyesuaikan checkbox dengan status ongoing.
+        document.getElementById('edit-exp-image').value = cardData.image_url; // Mengisi URL gambar dengan nilai sebelumnya.
+
+        document.getElementById('edit-experience-modal').showPopover(); // Menampilkan modal edit setelah semua input terisi.
+    } // Menutup fungsi openEditExperience.
+ 
+    async function updateExperience(event) { // Membuat fungsi asynchronous untuk memperbarui Experience.
+        event.preventDefault(); // Mencegah browser melakukan submit form biasa dan reload halaman.
+
+        const form = event.currentTarget; // Mengambil form edit yang sedang disubmit.
+        const expId = document.getElementById('edit-experience-id').value; // Mengambil ID Experience yang sedang diedit.
+        const updateUrl = DETAIL_EXPERIENCE_PATTERN.replace('/0/', `/${expId}/`); // Membentuk endpoint detail API berdasarkan ID Experience.
+        const submitButton = form.querySelector('button[type="submit"]'); // Mengambil tombol Simpan Perubahan.
+
+        submitButton.disabled = true; // Menonaktifkan tombol untuk mencegah request PATCH berulang.
+        submitButton.textContent = 'Menyimpan...'; // Memberi indikator bahwa proses penyimpanan sedang berlangsung.
+
+        try { // Memulai blok request yang dapat menghasilkan error.
+            const formData = new FormData(form); // Mengambil seluruh input form sebagai FormData.
+            formData.set('is_ongoing', document.getElementById('edit-exp-ongoing').checked ? 'true' : 'false'); // Mengirim nilai boolean secara eksplisit, termasuk saat checkbox tidak dicentang.
+            formData.delete('id'); // Menghapus field ID karena ID hanya digunakan pada URL dan tidak boleh diubah.
+
+            const response = await fetch(updateUrl, { // Mengirim perubahan ke endpoint API detail Experience.
+                method: 'PATCH', // Menggunakan PATCH untuk memperbarui data Experience.
+                headers: { // Menentukan header request.
+                    'X-CSRFToken': getCookie('csrftoken'), // Mengirim token CSRF agar request diterima SessionAuthentication.
+                    'Accept': 'application/json', // Meminta respons JSON dari API.
+                }, // Menutup objek headers.
+                body: formData, // Mengirim data form yang sudah disiapkan.
+            }); // Menunggu respons dari server.
+
+            const result = await response.json().catch(() => ({})); // Membaca JSON respons atau menggunakan objek kosong jika parsing gagal.
+
+            if (response.ok) { // Memeriksa apakah API berhasil menyimpan perubahan.
+                document.getElementById('edit-experience-modal').hidePopover(); // Menutup modal edit setelah penyimpanan berhasil.
+                showToast('Berhasil', 'Experience berhasil diperbarui.', 'success'); // Menampilkan pesan keberhasilan.
+                await loadExperiences(); // Memperbarui daftar Experience melalui API tanpa reload halaman.
+            } else { // Menangani respons error dari API.
+                showToast('Gagal memperbarui Experience', formatErrorMessages(result, `HTTP ${response.status}`), 'error'); // Menampilkan pesan validasi atau permission melalui toast.
+            } // Menutup pemeriksaan respons.
+        } catch (error) { // Menangani error jaringan atau request.
+            console.error('Error updating experience:', error); // Menampilkan detail error untuk debugging.
+            showToast('Gagal memperbarui Experience', 'Periksa koneksi lalu coba lagi.', 'error'); // Memberi tahu pengguna jika request gagal.
+        } finally { // Menjalankan blok setelah request selesai, baik berhasil maupun gagal.
+            submitButton.disabled = false; // Mengaktifkan kembali tombol Simpan Perubahan.
+            submitButton.textContent = 'Simpan Perubahan'; // Mengembalikan teks tombol seperti semula.
+        } // Menutup blok finally.
+    } // Menutup fungsi updateExperience.
+
     expGrid.addEventListener('click', function (event) { // Mendengarkan seluruh klik di dalam grid Experience.
         const starButton = event.target.closest('[data-star-url]'); // Mencari tombol Star terdekat dari elemen yang diklik.
 
@@ -244,9 +317,22 @@
         if (deleteButton && expGrid.contains(deleteButton)) { // Memastikan tombol Delete berasal dari grid Experience.
             deleteExperience(deleteButton.dataset.deleteUrl, deleteButton); // Menjalankan fungsi Delete dengan URL dan tombol yang sesuai.
         } // Menutup pemeriksaan tombol Delete.
+
+        const editButton = event.target.closest('[data-edit-id]'); // Mencari tombol Edit terdekat dari elemen yang diklik.
+
+        if (editButton && expGrid.contains(editButton)) { // Memastikan tombol Edit berada di dalam grid Experience.
+            openEditExperience(editButton.dataset.editId); // Membuka modal edit berdasarkan ID Experience yang dipilih.
+        } // Menutup pemeriksaan tombol Edit.
     }); // Menutup event listener pada grid Experience.
 
+    const editExperienceForm = document.getElementById('edit-experience-form'); // Mengambil elemen form edit dari modal.
+
+    if (editExperienceForm) { // Memastikan form edit tersedia untuk Editor atau superuser.
+        editExperienceForm.addEventListener('submit', updateExperience); // Menghubungkan submit form dengan fungsi PATCH.
+    } // Menutup pemeriksaan form.
+
     let currentQuery = '';
+    let currentExperiences = []; // Menyimpan daftar Experience terakhir yang diterima dari API.
 
     // Satu-satunya fungsi yang mengambil data: dipakai oleh initial load, search,
     // retry, dan refresh setelah POST berhasil. Mengabort request lama agar respons
@@ -276,6 +362,8 @@
     }
 
     function renderExperiences(experiences, searchQuery) {
+        currentExperiences = experiences; // Memperbarui cache Experience agar tombol Edit menggunakan data terbaru.
+
         if (experiences.length === 0) {
             expGrid.replaceChildren(); // Memastikan data hasil pencarian sebelumnya tidak tertinggal dalam DOM ketika API mengembalikan array kosong
 
