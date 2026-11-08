@@ -1,7 +1,6 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import User  # Tambahkan baris ini
-from django.db import models
+from django.contrib.auth.models import User
 
 class Experience(models.Model):
     CATEGORY_CHOICES = [

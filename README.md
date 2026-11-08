@@ -2,9 +2,11 @@
 
 ## Deskripsi
 
-Website portofolio pribadi static untuk **Pemrograman Berbasis Platform (CSGE602022)**, Tugas Individu 1, Fakultas Ilmu Komputer, Universitas Indonesia, Semester Gasal 2026/2027.
+Website portofolio pribadi untuk mata kuliah **Pemrograman Berbasis Platform (CSGE602022)**, Fakultas Ilmu Komputer Universitas Indonesia, Semester Gasal 2026/2027.
 
-Website ini menampilkan profil **About Me**, riwayat pendidikan, galeri proyek, pengalaman organisasi, dan **Art Portfolio** dengan kategori bertab.
+Website ini dikembangkan secara bertahap dari static website menggunakan HTML dan CSS menjadi aplikasi Django berbasis Model-View-Template (MVT), database, autentikasi, interaktivitas JavaScript/AJAX, dan REST API menggunakan Django REST Framework.
+
+Website menampilkan profil pribadi, pendidikan, proyek, pengalaman organisasi, Art Portfolio, dan fitur kontak. Data Project dan Experience dapat dikelola melalui REST API dengan hak akses berdasarkan peran pengguna.
 
 * **Nama:** Yasmin
 * **NPM:** 2506606124
@@ -900,3 +902,221 @@ AI diposisikan sebagai reviewer dan coding assistant. Keputusan akhir mengenai a
 | TI5 | Claude | Target rubric 4 | Memberikan rubric secara eksplisit | Code quality dan UX diaudit terhadap kriteria nilai 4 |
 | TI5 | Claude | Security audit | Meminta audit CSRF, permission, XSS, dan HTTP status | Kekurangan security/error handling diidentifikasi dan diperbaiki |
 | TI5 | Claude | Final self-review | Meminta checklist audit setelah coding | Implementasi dibandingkan ulang dengan seluruh requirement |
+
+# Tugas 6 — Django REST Framework Implementation
+
+## Deskripsi
+
+Tugas 6 melanjutkan pengembangan website portofolio dari Tugas 5 dengan mengimplementasikan REST API menggunakan Django REST Framework (DRF).
+
+Pada tugas sebelumnya, data Project dan Experience dikirim melalui endpoint JSON yang dibuat menggunakan `JsonResponse` manual. Pada Tugas 6, proses serialization, validation, authentication, dan permission diintegrasikan dengan DRF.
+
+Implementasi diterapkan pada dua model, yaitu `Project` sebagai fitur yang dikembangkan dari Tutorial 07 dan `Experience` sebagai fitur yang dikembangkan pada tugas individu sebelumnya.
+
+## Fitur yang Diimplementasikan
+
+- **ModelSerializer** — menggunakan serializer untuk mengubah instance model menjadi representasi JSON dan memvalidasi input.
+- **Explicit fields** — menentukan field yang boleh dikirim melalui API, sehingga data relasi pengguna tidak terekspos.
+- **Computed fields** — menampilkan jumlah star dan status star pengguna melalui `SerializerMethodField`.
+- **REST API endpoints** — mendukung GET, POST, PUT, PATCH, dan DELETE sesuai permission.
+- **Search API** — melakukan pencarian Project dan Experience menggunakan query parameter.
+- **Role-based permissions** — membedakan akses Guest, User biasa, Editor, dan Superuser.
+- **SessionAuthentication dan CSRF** — melindungi request yang mengubah data melalui session login.
+- **AJAX integration** — frontend menggunakan Fetch API untuk berinteraksi dengan endpoint DRF tanpa reload halaman.
+- **Validation dan sanitization** — menggunakan serializer untuk memvalidasi input dan membersihkan tag HTML.
+- **Automated testing** — menggunakan `APITestCase` untuk menguji API, permission, validasi, star, dan CSRF.
+
+## Struktur Implementasi
+
+| File | Fungsi |
+|---|---|
+| `main/models.py` | Mendefinisikan model Project dan Experience |
+| `main/serializers.py` | Menentukan field API, validasi, dan computed fields |
+| `main/permissions.py` | Mengatur hak akses berdasarkan peran pengguna |
+| `main/api_views.py` | Menangani request REST API |
+| `main/api_urls.py` | Mendefinisikan endpoint API |
+| `templates/project.html` | Menampilkan dan mengelola data Project |
+| `templates/experience.html` | Menampilkan dan mengelola data Experience |
+| `templates/components/experience_edit_modal.html` | Menyediakan form edit Experience |
+| `main/tests_api.py` | Menguji perilaku REST API menggunakan APITestCase |
+
+## Endpoint Experience API
+
+| Method | Endpoint | Fungsi |
+|---|---|---|
+| GET | `/api/v1/experiences/` | Mengambil seluruh Experience |
+| GET | `/api/v1/experiences/?q=creative` | Mencari Experience berdasarkan title atau organization |
+| POST | `/api/v1/experiences/` | Membuat Experience |
+| GET | `/api/v1/experiences/5/` | Mengambil detail Experience |
+| PUT | `/api/v1/experiences/5/` | Memperbarui seluruh field Experience |
+| PATCH | `/api/v1/experiences/5/` | Memperbarui sebagian field Experience |
+| DELETE | `/api/v1/experiences/5/` | Menghapus Experience |
+| POST | `/api/v1/experiences/5/star/` | Memberikan atau membatalkan star |
+
+Angka `5` merupakan contoh ID Experience dan disesuaikan dengan data yang tersedia.
+
+## Hak Akses API
+
+| Peran | GET | POST Create | PUT/PATCH | DELETE | POST Star |
+|---|---|---|---|---|---|
+| Guest | Diizinkan | Ditolak | Ditolak | Ditolak | Ditolak |
+| User biasa | Diizinkan | Ditolak | Ditolak | Ditolak | Diizinkan |
+| Editor | Diizinkan | Ditolak | Diizinkan | Ditolak | Diizinkan |
+| Superuser | Diizinkan | Diizinkan | Diizinkan | Diizinkan | Diizinkan |
+
+Permission diterapkan pada backend melalui `IsPortfolioOwnerOrEditorOrReadOnly`, bukan hanya dengan menyembunyikan tombol pada template.
+
+## Integrasi Frontend dengan DRF
+
+Pada halaman Experience, data dimuat melalui `fetch()` ke endpoint DRF. Respons JSON kemudian digunakan untuk membangun kartu Experience secara dinamis.
+
+Fitur yang diintegrasikan mencakup:
+
+1. Memuat daftar Experience menggunakan GET.
+2. Mencari Experience menggunakan parameter `q` dengan debouncing.
+3. Menambahkan Experience menggunakan POST dari modal.
+4. Memberikan atau membatalkan star menggunakan POST.
+5. Mengedit Experience menggunakan PATCH dari modal edit.
+6. Menghapus Experience menggunakan DELETE.
+7. Menampilkan hasil request melalui toast.
+8. Memperbarui tampilan tanpa reload halaman.
+
+Untuk operasi yang mengubah data, JavaScript mengirim token CSRF melalui header `X-CSRFToken`.
+
+Data teks yang dimasukkan ke DOM juga diproses melalui `escapeHtml()` untuk mengurangi risiko XSS.
+
+## Pertanyaan Reflektif
+
+### 1. Apa perbedaan REST API menggunakan DRF dengan endpoint JSON manual?
+
+Pada Tugas 5, `JsonResponse` digunakan manual untuk mengembalikan data Project dan Experience. Struktur dictionary yang dikirim harus ditentukan sendiri, form divalidasi melalui `ModelForm`, dan respons HTTP diatur di dalam view.
+
+Pada Tugas 6, Django REST Framework digunakan agar proses tersebut lebih terstruktur. `ModelSerializer` menentukan representasi data dan validasi input, sedangkan decorator `@api_view` membatasi HTTP method yang diperbolehkan.
+
+Keuntungan DRF adalah aturan validasi dan representasi data dapat digunakan kembali pada berbagai endpoint. Misalnya, `ExperienceSerializer` digunakan untuk respons daftar, detail, create, update, dan star.
+
+Namun, DRF tidak secara otomatis membuat API aman. Field yang boleh ditampilkan tetap harus ditentukan sendiri, begitu juga permission setiap method, autentikasi, serta perlindungan CSRF.
+
+### 2. Apa perbedaan PUT dan PATCH?
+
+PUT digunakan untuk memperbarui representasi resource secara lengkap, sedangkan PATCH digunakan untuk memperbarui sebagian field.
+
+Contohnya, ketika yang ingin diubah hanya title Experience, PATCH dapat dikirim dengan data `{"title": "Game Developer"}` tanpa mengirim ulang organization, description, category, dan field lainnya.
+
+Pada implementasi DRF, PATCH menggunakan serializer dengan `partial=True`, sehingga field wajib yang tidak dikirim tidak menyebabkan validation error hanya karena field tersebut tidak ada dalam request.
+
+Sebaliknya, PUT menggunakan validasi pembaruan lengkap sehingga field wajib yang tidak dikirim dapat menyebabkan HTTP 400.
+
+Pada frontend Experience, PATCH digunakan untuk modal edit karena operasi tersebut bertujuan memperbarui data Experience yang sudah ada.
+
+### 3. Apa fungsi serializer dan mengapa field perlu ditentukan secara eksplisit?
+
+Serializer mengubah objek model Django menjadi representasi data yang dapat dikirim melalui API, sekaligus memvalidasi data yang diterima dari client.
+
+Pada `ExperienceSerializer`, field seperti `title`, `organization`, `description`, `category`, `is_ongoing`, dan `image_url` ditambahkan. `category_display`, `stars_count`, dan `has_starred` juga ditambahkan sebagai field yang hanya dapat dibaca.
+
+Field ditentukan secara eksplisit agar API tidak otomatis mengekspos seluruh field model. Hal ini penting terutama untuk relasi `starred_by`, karena client hanya perlu mengetahui jumlah star dan apakah pengguna yang sedang login sudah memberikan star, bukan daftar identitas pengguna lain.
+
+Serializer juga menggunakan `strip_tags` untuk membersihkan tag HTML pada input teks, kemudian memvalidasi hasilnya agar nilai yang menjadi kosong tidak disimpan.
+
+### 4. Apa perbedaan authentication dan authorization, serta bagaimana CSRF bekerja pada SessionAuthentication?
+
+Authentication adalah proses memastikan identitas pengguna, sedangkan authorization adalah proses menentukan tindakan apa yang boleh dilakukan oleh pengguna tersebut.
+
+Contohnya, pengguna biasa yang sudah login telah berhasil melewati authentication. Namun, pengguna tersebut tetap tidak boleh menghapus Experience karena authorization membatasi DELETE hanya untuk superuser.
+
+Pada implementasi web ini, `SessionAuthentication` menggunakan session Django untuk mengenali pengguna yang sedang login. Permission class kemudian memeriksa apakah pengguna merupakan superuser, anggota grup Editor, pengguna biasa, atau Guest.
+
+CSRF diperlukan karena browser dapat mengirim cookie session secara otomatis. Tanpa perlindungan CSRF, situs lain berpotensi mencoba mengirim request yang mengubah data menggunakan session pengguna yang sedang login.
+
+Karena itu, request AJAX yang menggunakan session dan mengubah data harus menyertakan token CSRF yang valid melalui header `X-CSRFToken`.
+
+`APIClient(enforce_csrf_checks=True)` juga digunakan dalam automated testing untuk memastikan request session tanpa token CSRF ditolak, sedangkan request dengan token yang valid dapat diproses.
+
+## Automated Testing
+
+Pengujian API dilakukan menggunakan `APITestCase` dari Django REST Framework.
+
+Skenario yang diuji meliputi:
+
+- GET daftar dan detail oleh Guest.
+- Pencarian berdasarkan title dan organization.
+- Respons 404 untuk Experience yang tidak ditemukan.
+- Penolakan operasi CRUD oleh Guest dan User biasa.
+- Hak PUT/PATCH untuk Editor.
+- Hak create dan delete untuk superuser.
+- Validasi input kosong dan input yang mengandung tag HTML.
+- Pembersihan tag HTML menggunakan `strip_tags`.
+- Toggle star dan unstar.
+- Perlindungan computed fields dari manipulasi client.
+- Penolakan request session tanpa CSRF.
+- Keberhasilan request session dengan token CSRF.
+- Pemeriksaan bahwa request yang ditolak tidak mengubah database.
+
+Pengujian dapat dijalankan menggunakan:
+
+`python manage.py test main.tests_api.ExperienceAPITest`
+
+Untuk menjalankan seluruh test aplikasi:
+
+`python manage.py test main`
+
+## AI Disclosure — Individual Assignment 6
+
+### AI Tools Used
+
+| Tool | Tujuan Penggunaan | Jenis Bantuan |
+|---|---|---|
+| ChatGPT (OpenAI, GPT-6) | Memahami implementasi DRF, migrasi frontend Experience ke API, menyusun automated tests, dan dokumentasi | Penjelasan konsep, panduan implementasi bertahap, code generation, review, dan drafting dokumentasi |
+
+Log Chat: [link](https://chatgpt.com/share/6af06d29-ff04-83ec-be25-519737cec5d8)
+
+### AI Usage & Prompting Strategy
+
+Saya menggunakan ChatGPT secara bertahap berdasarkan milestone implementasi, bukan meminta seluruh tugas dikerjakan dalam satu langkah.
+
+Saya memberikan struktur model, serializer, permission, API views, URL, template, dan test yang sudah ada agar saran yang diberikan dapat disesuaikan dengan implementasi aktual.
+
+Saya juga meminta penjelasan fungsi setiap baris kode untuk memahami alur request, perubahan data, autentikasi, dan validasi.
+
+### Parts Assisted by AI
+
+| Bagian | Bantuan AI | Tindakan Manual |
+|---|---|---|
+| Integrasi Star dan Delete Experience | Menjelaskan migrasi dari form lama ke Fetch API | Mengubah JavaScript dan memeriksa request melalui DevTools |
+| Edit Experience | Menyusun modal edit, pengisian form, dan request PATCH | Mengintegrasikan modal dan handler ke template |
+| Automated testing | Menyusun test permission, validasi, star, dan CSRF | Menambahkan test ke proyek dan menjalankannya |
+| Dokumentasi | Membantu menyusun penjelasan DRF dan jawaban reflektif | Meninjau dokumentasi agar sesuai implementasi |
+
+### Critical Reflection on AI Limitations
+
+Salah satu keterbatasan AI adalah saran implementasi dapat bergantung pada asumsi mengenai struktur kode yang belum diperlihatkan.
+
+Misalnya, ketika mengembangkan fitur edit Experience, implementasi JavaScript harus disesuaikan dengan ID elemen HTML, struktur modal, nama URL, dan fungsi yang sudah ada. Jika nama atau struktur tersebut berbeda, kode yang secara konsep benar tetap dapat gagal ketika dijalankan.
+
+Selain itu, AI tidak dapat memastikan suatu fitur benar-benar berhasil hanya dari penjelasan kode. Keberhasilan request harus diperiksa melalui browser, Network tab, respons HTTP, dan perubahan database.
+
+Karena itu, saya menggunakan AI sebagai alat bantu untuk memahami dan menyusun implementasi, kemudian memeriksa kesesuaiannya dengan kode dan hasil pengujian.
+
+### Manual Improvements & Verification
+
+Proses verifikasi yang dilakukan mencakup:
+
+- Memeriksa bahwa request Star menggunakan endpoint `/api/v1/experiences/<id>/star/`, bukan URL view lama.
+- Memeriksa respons HTTP melalui Chrome DevTools.
+- Memastikan perubahan Star dan Delete menggunakan Fetch API.
+- Mengintegrasikan modal Edit dengan endpoint PATCH.
+- Menjaga test Project dari Tutorial 07 agar tidak tertimpa test Experience.
+- Memperbarui test lama agar memeriksa endpoint DRF yang digunakan frontend.
+- Menambahkan automated tests untuk empat peran pengguna, validasi, Star, dan CSRF.
+
+### AI Prompting Log
+
+| Tahap | Tujuan Prompt | Bantuan AI |
+|---|---|---|
+| Integrasi DRF | Memahami perpindahan dari endpoint JSON manual ke REST API | Penjelasan alur dan perubahan frontend |
+| Star dan Delete | Mengubah operasi menjadi request Fetch API | Panduan implementasi dan pemeriksaan respons |
+| Debugging request | Memastikan request mengarah ke endpoint DRF | Penjelasan Network tab dan perbedaan URL halaman dengan URL API |
+| Edit Experience | Mengimplementasikan modal dan PATCH | Kode bertahap dengan komentar setiap baris |
+| Automated testing | Menguji role, validasi, Star, dan CSRF | Penyusunan `ExperienceAPITest` |
+| Dokumentasi | Menambahkan bagian IA6 pada README | Draf dokumentasi dan jawaban reflektif |
