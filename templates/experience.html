@@ -107,8 +107,8 @@
     }
 
     function buildExperienceCard(item) {
-        const exp = item.fields;
-        const expId = item.pk;
+        const exp = item;
+        const expId = item.id;
 
         const article = document.createElement('article');
         article.className = 'card experience-card';
@@ -200,9 +200,12 @@
 
     function renderExperiences(experiences, searchQuery) {
         if (experiences.length === 0) {
+            expGrid.replaceChildren(); // Memastikan data hasil pencarian sebelumnya tidak tertinggal dalam DOM ketika API mengembalikan array kosong
+
             emptyExpText.textContent = searchQuery
                 ? 'Tidak ada pengalaman yang cocok dengan pencarian.'
                 : 'Belum ada pengalaman yang ditambahkan.';
+
             displayExpSection({ showEmpty: true });
             return;
         }
