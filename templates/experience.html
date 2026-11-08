@@ -115,9 +115,9 @@
 
         // Placeholder 0 hanya muncul di segmen ID (/<id>/), jadi aman diganti per segmen.
         const withId = urlTemplate => urlTemplate.replace('/0/', `/${expId}/`);
-        const editUrl = withId("{% url 'main:update_experience' 0 %}");
-        const deleteUrl = withId("{% url 'main:delete_experience' 0 %}");
-        const starUrl = withId("{% url 'main:toggle_star_experience' 0 %}");
+        const editUrl = withId("{% url 'main:update_experience' 0 %}"); // Mempertahankan URL edit lama sementara, sampai kita membuat modal edit DRF pada milestone berikutnya.
+        const deleteUrl = withId(DETAIL_EXPERIENCE_PATTERN); // Membentuk URL API detail yang akan menerima request DELETE.
+        const starUrl = withId(STAR_EXPERIENCE_PATTERN); // Membentuk URL API star yang akan menerima request POST.
 
         const imgHtml = exp.image_url
             ? `<img src="${escapeHtml(exp.image_url)}" alt="${escapeHtml(exp.organization)} Logo" class="exp-icon">`
@@ -132,14 +132,14 @@
         if (IS_SUPERUSER || IS_EDITOR) {
             adminHtml += `<a href="${editUrl}" class="btn-action btn-edit">Edit</a>`;
         }
-        if (IS_SUPERUSER) {
+        if (IS_SUPERUSER) { // Hanya superuser yang boleh melihat tombol Delete.
             adminHtml += `
-                <form action="${deleteUrl}" method="POST" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-action btn-delete"
-                        onclick="return confirm('Apakah kamu yakin ingin menghapus data ini?')">Delete</button>
-                </form>
-            `;
+                <button type="button"
+                        class="btn-action btn-delete"
+                        data-delete-url="${deleteUrl}">
+                    Delete
+                </button>
+            `; // Membuat tombol yang menyimpan URL API DELETE dalam atribut data-delete-url.
         }
 
         article.innerHTML = `
@@ -152,12 +152,13 @@
                         <p class="experience-description">${escapeHtml(exp.description)}</p>
                         <p class="role-period">${periodText}</p>
 
-                        <form method="post" action="${starUrl}" class="star-form" style="margin-top: 10px;">
-                            {% csrf_token %}
-                            <button type="submit" class="button button-star${isStarredClass}">
-                                <span aria-hidden="true">★</span> ${starText} <span class="star-count">${escapeHtml(exp.stars_count)}</span>
-                            </button>
-                        </form>
+                        <button type="button"
+                                class="button button-star${isStarredClass}"
+                                data-star-url="${starUrl}"
+                                style="margin-top: 10px">
+                            <span aria-hidden="true">★</span> ${starText}
+                            <span class="star-count">${escapeHtml(exp.stars_count)}</span>
+                        </button>
 
                         <div class="card-actions" style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
                             ${adminHtml}
@@ -168,6 +169,82 @@
         `;
         return article;
     }
+
+    async function toggleExperienceStar(starUrl, button) { // Membuat fungsi asynchronous untuk mengubah status star Experience.
+        button.disabled = true; // Menonaktifkan tombol sementara agar pengguna tidak mengirim request berulang.
+
+        try { // Memulai blok yang menangani request dan kemungkinan error.
+            const response = await fetch(starUrl, { // Mengirim request ke endpoint API star Experience.
+                method: 'POST', // Menggunakan POST karena endpoint star menerima method POST.
+                headers: { // Menentukan header yang akan dikirim bersama request.
+                    'X-CSRFToken': getCookie('csrftoken'), // Mengirim token CSRF untuk melindungi request yang mengubah data.
+                    'Accept': 'application/json', // Meminta respons dalam format JSON.
+                }, // Menutup objek headers.
+            }); // Menunggu respons dari server.
+
+            const result = await response.json().catch(() => ({})); // Membaca respons JSON atau menggunakan objek kosong jika parsing gagal.
+
+            if (!response.ok) { // Memeriksa apakah server mengembalikan status error.
+                showToast('Gagal mengubah star', formatErrorMessages(result, `HTTP ${response.status}`), 'error'); // Menampilkan pesan error melalui toast.
+                return; // Menghentikan fungsi jika request gagal.
+            } // Menutup pemeriksaan error.
+
+            button.classList.toggle('is-starred', result.has_starred); // Memperbarui tampilan tombol berdasarkan status star dari API.
+            button.innerHTML = `<span aria-hidden="true">★</span> ${result.has_starred ? 'Unstar' : 'Star'} <span class="star-count">${escapeHtml(result.stars_count)}</span>`; // Memperbarui teks dan jumlah star tanpa reload.
+        } catch (error) { // Menangani error jaringan atau kegagalan request.
+            console.error('Error toggling experience star:', error); // Menampilkan detail error di console untuk debugging.
+            showToast('Gagal mengubah star', 'Periksa koneksi lalu coba lagi.', 'error'); // Memberi tahu pengguna bahwa request gagal.
+        } finally { // Menjalankan blok ini baik request berhasil maupun gagal.
+            button.disabled = false; // Mengaktifkan kembali tombol Star.
+        } // Menutup blok finally.
+    } // Menutup fungsi toggleExperienceStar.
+
+    async function deleteExperience(deleteUrl, button) { // Membuat fungsi asynchronous untuk menghapus satu Experience.
+        if (!confirm('Apakah kamu yakin ingin menghapus data ini?')) { // Meminta konfirmasi sebelum menghapus data.
+            return; // Membatalkan penghapusan jika pengguna memilih Cancel.
+        } // Menutup pemeriksaan konfirmasi.
+
+        button.disabled = true; // Menonaktifkan tombol untuk mencegah request DELETE berulang.
+
+        try { // Memulai proses request yang dapat menghasilkan error.
+            const response = await fetch(deleteUrl, { // Mengirim request ke endpoint API detail Experience.
+                method: 'DELETE', // Menggunakan HTTP DELETE untuk menghapus resource.
+                headers: { // Menentukan header request.
+                    'X-CSRFToken': getCookie('csrftoken'), // Mengirim token CSRF agar request diterima oleh SessionAuthentication.
+                    'Accept': 'application/json', // Meminta respons error dalam format JSON.
+                }, // Menutup objek headers.
+            }); // Menunggu respons server.
+
+            if (response.status === 204) { // Memeriksa apakah server berhasil menghapus Experience.
+                showToast('Berhasil', 'Experience berhasil dihapus.', 'success'); // Menampilkan toast keberhasilan.
+                await loadExperiences(); // Mengambil ulang daftar Experience melalui API tanpa reload halaman.
+                return; // Mengakhiri fungsi setelah penghapusan berhasil.
+            } // Menutup pemeriksaan keberhasilan.
+
+            const result = await response.json().catch(() => ({})); // Membaca detail error dari respons server jika tersedia.
+            showToast('Gagal menghapus Experience', formatErrorMessages(result, `HTTP ${response.status}`), 'error'); // Menampilkan alasan kegagalan penghapusan.
+        } catch (error) { // Menangani masalah jaringan atau request.
+            console.error('Error deleting experience:', error); // Menampilkan detail error pada console.
+            showToast('Gagal menghapus Experience', 'Periksa koneksi lalu coba lagi.', 'error'); // Memberi tahu pengguna bahwa penghapusan gagal.
+        } finally { // Menjalankan pembersihan setelah request selesai.
+            button.disabled = false; // Mengaktifkan kembali tombol Delete jika elemennya masih ada.
+        } // Menutup blok finally.
+    } // Menutup fungsi deleteExperience.
+
+    expGrid.addEventListener('click', function (event) { // Mendengarkan seluruh klik di dalam grid Experience.
+        const starButton = event.target.closest('[data-star-url]'); // Mencari tombol Star terdekat dari elemen yang diklik.
+
+        if (starButton && expGrid.contains(starButton)) { // Memastikan tombol Star benar-benar berada di dalam grid.
+            toggleExperienceStar(starButton.dataset.starUrl, starButton); // Menjalankan fungsi Star dengan URL dan tombol yang sesuai.
+            return; // Menghentikan pemrosesan agar klik tidak dianggap sebagai aksi lain.
+        } // Menutup pemeriksaan tombol Star.
+
+        const deleteButton = event.target.closest('[data-delete-url]'); // Mencari tombol Delete terdekat dari elemen yang diklik.
+
+        if (deleteButton && expGrid.contains(deleteButton)) { // Memastikan tombol Delete berasal dari grid Experience.
+            deleteExperience(deleteButton.dataset.deleteUrl, deleteButton); // Menjalankan fungsi Delete dengan URL dan tombol yang sesuai.
+        } // Menutup pemeriksaan tombol Delete.
+    }); // Menutup event listener pada grid Experience.
 
     let currentQuery = '';
 

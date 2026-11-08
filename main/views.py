@@ -1,20 +1,20 @@
 import datetime
-from django.shortcuts import render, redirect
-from main.models import Message
-from .models import Experience, Education, Project, ArtItem
-from .forms import MessageForm, ProjectForm, ExperienceForm
-from django.http import HttpResponse, JsonResponse
-from django.db.models import Q
-from django.core import serializers
-from django.views.decorators.http import require_POST
+
 from django.contrib import messages
 from django.contrib.auth import login, logout
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.core import serializers
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from rest_framework import viewsets
-from rest_framework.filters import SearchFilter
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import ensure_csrf_cookie  # Memastikan cookie CSRF tersedia ketika halaman Experience dibuka.
+
+from main.models import Message
+from .forms import ExperienceForm, MessageForm, ProjectForm
+from .models import ArtItem, Education, Experience, Project
 
 def show_main(request):
     last_login = request.COOKIES.get('last_login', 'Belum ada sesi login / Cookie tidak ditemukan')
@@ -28,6 +28,7 @@ def show_main(request):
     return render(request, "index.html", context)
 
 # Experiences
+@ensure_csrf_cookie  # Memastikan browser menerima cookie csrftoken untuk request API yang mengubah data.
 def show_experience(request):
     is_editor = False
     if request.user.is_authenticated:
