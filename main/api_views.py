@@ -10,7 +10,6 @@ from main.serializers import ExperienceSerializer, ProjectSerializer  # Memakai 
 
 
 @api_view(["GET", "HEAD", "POST"])  # Daftar dapat dibaca; POST membuat proyek baru.
-@authentication_classes([SessionAuthentication])  # Membaca pengguna dari cookie session Django.
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])  # Hanya pemilik dapat melakukan POST.
 def project_list(request):  # Menangani koleksi proyek pada satu URL.
     if request.method in ("GET", "HEAD"):  # Memilih jalur baca tanpa mengubah data.
@@ -27,7 +26,6 @@ def project_list(request):  # Menangani koleksi proyek pada satu URL.
 
 
 @api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])  # Menyediakan baca, ubah, dan hapus pada satu proyek.
-@authentication_classes([SessionAuthentication])  # Memakai session login yang sama.
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])  # Editor hanya boleh PUT atau PATCH.
 def project_detail(request, project_id):  # Menangani proyek yang ID-nya berasal dari URL.
     project = get_object_or_404(Project.objects.prefetch_related("starred_by"), pk=project_id)  # Mengambil objek atau menghasilkan 404.
@@ -44,7 +42,6 @@ def project_detail(request, project_id):  # Menangani proyek yang ID-nya berasal
 
 
 @api_view(["POST"])  # Star adalah aksi toggle yang hanya menerima POST.
-@authentication_classes([SessionAuthentication])  # Mengenali akun dari session browser.
 @permission_classes([IsAuthenticated])  # Semua akun login boleh memberi atau membatalkan star.
 def project_star(request, project_id):  # Menangani star untuk satu proyek.
     project = get_object_or_404(Project, pk=project_id)  # Memastikan proyek yang dituju ada.
@@ -99,3 +96,10 @@ def experience_star(request, experience_id):  # Menangani toggle star satu penga
     else:  # Menangani keadaan belum memberi star.
         experience.starred_by.add(request.user)  # Memberi star atas nama pengguna login.
     return Response(ExperienceSerializer(experience, context={"request": request}).data)  # Mengirim keadaan star terbaru.
+
+@api_view(["POST"] )
+@permission_classes([IsAuthenticated])
+def api_logout(request):
+    if request.auth is not None:
+        request.auth.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
